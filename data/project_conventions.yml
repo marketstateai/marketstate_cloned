@@ -1,0 +1,152 @@
+version: 1
+
+naming_conventions:
+  description: >
+    Strict model and source naming rules by layer. Each layer has a fixed prefix
+    and a scoped set of allowed operations. Anything outside the listed operations
+    belongs in a later layer.
+
+  columns:
+    description: "Strict column naming rules for all models."
+    rules:
+      - "Use snake_case for all column names."
+      - "No spaces, hyphens, or mixed casing."
+      - "Primary keys must end with _id when not a natural key."
+      - "Surrogate keys must end with _sk."
+      - "Surrogate keys are lower-case base36, max 10 chars, derived from all PK columns."
+      - "Timestamps use _ts (UTC), dates use _date, datetimes use _dt."
+      - "Boolean columns use is_ or has_ prefixes."
+      - "Units are encoded in the name (e.g., _usd, _pct, _count, _days)."
+      - "Arrays and repeated fields use plural nouns."
+      - "Avoid reserved keywords and ambiguous abbreviations."
+
+  layers:
+    flat:
+      prefix: "flat_"
+      description: "Landing area for raw flat files before normalization."
+      naming_pattern: "flat_<domain>_<entity>"
+      operations:
+        - "Load raw flat files as-is."
+        - "Define column names only."
+        - "Keep all columns as strings."
+        - "No filters, joins, or deduping."
+        - "No renames or business rules."
+      outputs:
+        - "Raw landing tables for ingestion validation."
+
+    src:
+      prefix: "src_"
+      description: "Source-aligned tables in the warehouse."
+      naming_pattern: "src_<entity>"
+      operations:
+        - "Source table definitions and metadata."
+        - "Column descriptions and tests only."
+        - "No transformations beyond column definitions."
+        - "All columns remain as strings."
+      outputs:
+        - "Canonical raw tables used by staging."
+
+    cln:
+      prefix: "cln_"
+      description: "Cleansed tables sourced directly from raw tables."
+      naming_pattern: "cln_<entity>"
+      operations:
+        - "Select directly from a single raw/source table."
+        - "Column selection and narrowing to required fields."
+        - "Aliasing/renaming to analytics-friendly names."
+        - "Type casting and normalization."
+        - "Convert blank strings and placeholders to null."
+        - "Primary key identification with not_null and unique tests."
+        - "Surrogate key identification derived from all PK columns."
+        - "Deduping to a single record per primary key."
+        - "Basic row-level filters for invalid records."
+        - "No joins in cln; all joins must be done in int or later layers."
+      outputs:
+        - "Typed, consistent, and deduped cleansed tables."
+
+    stg:
+      prefix: "stg_"
+      description: "Standardized, typed, and lightly cleaned staging models."
+      naming_pattern: "stg_<entity>"
+      operations:
+        - "Aliasing and renaming to analytics-friendly names."
+        - "Type casting and normalization."
+        - "Trim whitespace and standardize casing."
+        - "Replace placeholders like 'nan'/'null' with null."
+        - "Convert blank strings to null."
+        - "Primary key definition and uniqueness tests."
+        - "Deduping to a single record per primary key."
+        - "Basic row-level filters for invalid records."
+        - "No joins in stg; all joins must be done in int or later layers."
+      outputs:
+        - "Typed, consistent, and deduped staging tables."
+
+    int:
+      prefix: "int_"
+      description: "Intermediate transformations and business logic."
+      naming_pattern: "int_<entity>_<purpose>"
+      operations:
+        - "Joins across multiple staging models."
+        - "Enrichment and derivation of fields."
+        - "Filtering incomplete or invalid records."
+        - "Application of business rules."
+        - "Preparing data for marts (without final aggregation)."
+        - "Record ranking, window logic, or complex deduping."
+      outputs:
+        - "Reusable intermediate datasets for marts."
+
+    mrt:
+      prefix: "mrt_"
+      description: "Final mart models for analytics consumption."
+      naming_pattern: "mrt_<domain>_<entity_or_grain>"
+      operations:
+        - "Final aggregation and summarization."
+        - "Dimensional modeling (facts/dims)."
+        - "Metric definitions and KPI calculations."
+        - "Business-approved filters and exclusions."
+        - "Documentation and tests expected for end users."
+      outputs:
+        - "Analytics-ready tables and views."
+
+sql_conventions:
+  description: "SQL style rules applied across dbt models."
+  # Note: BigQuery materialized views do not normally support window functions.
+  keywords:
+    - "Use uppercase SQL keywords (SELECT, FROM, WHERE, JOIN, GROUP BY, ORDER BY, QUALIFY)."
+  casing:
+    - "Use uppercase for SQL keywords and built-in functions where applicable."
+  structure:
+    - "Final statement is a clean SELECT col1, col2, ... FROM final_cte."
+    - "No transformations, joins, or filters in the final SELECT."
+    - "All columns in the final SELECT must be explicitly cast."
+    - "All view models must include explicit data type casting for every selected column."
+    - "Primary key columns appear first in SELECT lists, ordered by business key priority."
+    - "Every model must define a primary key; composite keys must include a surrogate key with unique and not_null tests."
+    - "Composite primary keys must include a surrogate key derived from all PK columns."
+    - "Do not use GROUP BY ALL (or SELECT DISTINCT when it replaces it)."
+  materialization_order:
+    - "Try materialized views first for view models."
+    - "Fallback to standard views if MV is unsupported."
+    - "Use tables only when MV or view performance is insufficient."
+  formatting:
+    - "One column per line in SELECT lists."
+    - "Use trailing commas in SELECT lists; leading commas are not allowed."
+    - "Align JOIN conditions under ON."
+    - "Use explicit aliases with AS."
+
+linting_conventions:
+  description: "Static analysis rules and tooling for SQL and Python."
+  sqlfluff:
+    dialect: "bigquery"
+    templater: "dbt"
+    rules:
+      - "Enforce uppercase SQL keywords."
+      - "Require explicit aliasing for computed columns."
+      - "Prefer leading commas in SELECT."
+      - "Disallow SELECT * in models."
+  flake8:
+    max_line_length: 100
+    rules:
+      - "Use explicit imports."
+      - "No unused variables or imports."
+      - "Prefer f-strings for formatting."

@@ -1,0 +1,5 @@
+packages:
+  - git: https://github.com/data-mie/dbt-profiler.git
+    name: dbt_profiler
+    revision: e96df0321d4ca38efc1a3cf0a08db31e04db5fdd
+sha1_hash: f112a2e47bcb750362904443140a826e83ca48f2

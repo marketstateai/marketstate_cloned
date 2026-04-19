@@ -1,0 +1,10 @@
+version: 2
+
+seeds:
+  - name: currency_mapping
+    description: Seed mapping of lowercase currency codes to canonical currency names for dbt docs and joins.
+    columns:
+      - name: currency
+        description: Lowercase ISO currency code (e.g., usd, eur).
+      - name: currency_name
+        description: Canonical currency name used for reporting.

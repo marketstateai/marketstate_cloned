@@ -1,0 +1,111 @@
+models:
+- name: stg_companies
+  config:
+    schema: stg_prod
+  description: |-
+    Company reference data with one row per company.
+    {{ doc('stg_companies') }}
+  columns:
+  - name: company_name
+    description: "{{ doc('stg_companies') }}\n"
+    tests:
+    - not_null
+    - unique
+    data_type: string
+  - name: business_summary
+    description: Short business summary.
+    data_type: string
+  - name: website
+    description: Company website URL.
+    data_type: string
+  - name: address
+    description: Full address.
+    data_type: string
+  - name: city
+    description: City.
+    data_type: string
+  - name: zip
+    description: Postal code.
+    data_type: string
+  - name: country_of_origin
+    description: Country where the company was established.
+    data_type: string
+  - name: financial_currency
+    description: Currency used in financial reporting.
+    data_type: string
+  - name: sector
+    description: Business sector.
+    data_type: string
+  - name: industry
+    description: Industry within the sector.
+    data_type: string
+  - name: wikipedia_url
+    description: Wikipedia URL.
+    data_type: string
+sources:
+- name: raw
+  description: Raw source tables in BigQuery.
+  database: general-428410
+  schema: src_prod
+  loader: python
+  tables:
+  - name: src_companies
+    description: "{{ doc('src_companies') }}\n"
+    columns:
+    - name: company_name
+      description: Company name; primary key.
+      data_type: string
+    - name: website
+      description: Company website URL.
+      data_type: string
+    - name: phone
+      description: Primary contact phone number.
+      data_type: string
+    - name: address1
+      description: First line of the address.
+      data_type: string
+    - name: address2
+      description: Second line of the address.
+      data_type: string
+    - name: city
+      description: City location.
+      data_type: string
+    - name: zip
+      description: Postal code.
+      data_type: string
+    - name: country_of_origin
+      description: Country where the company was established.
+      data_type: string
+    - name: financial_currency
+      description: Currency used in financial reporting.
+      data_type: string
+    - name: sector
+      description: Business sector.
+      data_type: string
+    - name: industry
+      description: Industry within the sector.
+      data_type: string
+    - name: primary_market
+      description: Primary market segment.
+      data_type: string
+    - name: market_share
+      description: Market share of the primary segment.
+      data_type: string
+    - name: wikipedia_url
+      description: Wikipedia URL.
+      data_type: string
+    - name: business_summary
+      description: Short business summary.
+      data_type: string
+    - name: main_market_segments
+      description: Main market segments.
+      data_type: string
+    - name: geo_markets
+      description: Geographic markets.
+      data_type: string
+    - name: products
+      description: Products or services.
+      data_type: string
+    - name: business_summary_int
+      description: Extended business summary.
+      data_type: string

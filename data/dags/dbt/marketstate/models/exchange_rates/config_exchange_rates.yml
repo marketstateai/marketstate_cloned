@@ -1,0 +1,121 @@
+models:
+- name: stg_exchange_rates_current
+  config:
+    schema: stg_prod
+  description: Latest exchange rate per currency and date.
+  columns:
+  - name: exchange_rate_sk
+    description: Surrogate key derived from currency and date.
+    data_type: STRING
+    tests:
+    - unique
+    - not_null
+  - name: currency
+    description: Currency code in uppercase.
+    data_type: STRING
+  - name: date
+    description: Effective date of the exchange rate.
+    data_type: DATE
+  - name: rate
+    description: Exchange rate rounded to 3 decimal places.
+    data_type: FLOAT64
+
+- name: stg_currency_mapping
+  config:
+    schema: stg_prod
+  description: Currency code to human-readable name mapping.
+  columns:
+  - name: currency_mapping_sk
+    description: Surrogate key derived from currency.
+    data_type: STRING
+    tests:
+    - unique
+    - not_null
+  - name: currency
+    description: Currency code in uppercase.
+    data_type: STRING
+  - name: currency_name
+    description: Human-readable currency name.
+    data_type: STRING
+
+- name: int_exchange_rates_current
+  config:
+    schema: int_prod
+  description: Latest exchange rate per currency and date with currency names.
+  columns:
+  - name: exchange_rate_sk
+    description: Surrogate key derived from currency and date.
+    data_type: STRING
+    tests:
+    - unique
+    - not_null
+  - name: currency
+    description: Currency code in uppercase.
+    data_type: STRING
+  - name: date
+    description: Effective date of the exchange rate.
+    data_type: DATE
+  - name: currency_name
+    description: Human-readable currency name.
+    data_type: STRING
+  - name: rate
+    description: Exchange rate rounded to 3 decimal places.
+    data_type: FLOAT64
+    
+- name: int_symbol_exchange_rates
+  config:
+    schema: int_prod
+  description: |-
+    Builds a symbol-to-exchange/currency lookup for downstream exchange-rate mapping.
+    Primary key: symbol_exchange_rate_sk is a stable hash of yf_symbol to keep one row per symbol.
+    Excludes rows missing market_identifier_code and de-duplicates to one exchange per MIC and one MIC per symbol.
+  columns:
+  - name: symbol_exchange_rate_sk
+    description: Surrogate key derived from yf_symbol.
+    data_type: STRING
+    tests:
+    - unique
+    - not_null
+  - name: yf_symbol
+    description: Yahoo Finance symbol.
+    data_type: STRING
+  - name: exchange_name
+    description: Exchange name.
+    data_type: STRING
+  - name: currency
+    description: Exchange currency code.
+    data_type: STRING
+
+sources:
+- name: raw
+  description: Raw source tables in BigQuery.
+  database: general-428410
+  schema: src_prod
+  tables:
+  - name: exchange_rates
+    description: |-
+      Exchange rates from https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@2025.10.10/v1/currencies/usd.json
+      {{ doc('exchange_rates') }}
+    loader: python DAG get_exchange_rates.py
+    columns:
+    - name: currency
+      description: Currency code.
+      data_type: STRING
+    - name: rate
+      description: Raw exchange rate.
+      data_type: FLOAT64
+    - name: date
+      description: Effective date of the rate.
+      data_type: DATE
+  
+  - name: currency_mapping
+    description: |-
+      Maps EUR to Euro and GBP to Great British Pound
+      {{ doc('currency_mapping') }}
+    columns:
+    - name: currency
+      description: Currency code.
+      data_type: STRING
+    - name: currency_name
+      description: Human-readable currency name.
+      data_type: STRING

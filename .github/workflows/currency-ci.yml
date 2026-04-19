@@ -1,0 +1,59 @@
+name: Currency CI
+
+on:
+  pull_request:
+    paths:
+      - "apis/currency/**"
+      - ".github/workflows/currency-ci.yml"
+  push:
+    branches: ["*"]
+    paths:
+      - "apis/currency/**"
+      - ".github/workflows/currency-ci.yml"
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apis/currency
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Type check
+        run: uv run mypy app
+
+      - name: Security scan (Bandit)
+        run: uv run bandit -r app
+
+      - name: Dependency audit
+        run: uv run pip-audit
+
+      - name: Run tests
+        run: uv run pytest -q --cov=app --cov-report=term-missing --cov-fail-under=85
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker build
+        run: docker build -t currency-api-ci apis/currency

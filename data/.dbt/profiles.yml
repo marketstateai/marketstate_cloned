@@ -1,0 +1,14 @@
+marketstate:
+  target: prod
+  outputs:
+    prod:
+      type: bigquery
+      method: service-account
+      project: general-428410
+      dataset: src_prod
+      location: US
+      keyfile: "{{ env_var('DBT_BQ_KEYFILE', '/usr/local/airflow/.dbt/bigquery-creds.json') }}"
+      threads: 1
+      priority: interactive
+      job_execution_timeout_seconds: 30
+      job_retries: 1

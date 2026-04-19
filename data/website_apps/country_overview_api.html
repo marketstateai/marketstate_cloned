@@ -1,0 +1,332 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Cap Bar Chart</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Kumbh Sans', sans-serif;
+        font-weight: 300;
+        text-align: center;
+        background-color: #141414;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: auto;
+        padding: 20px;
+    }
+
+    canvas {
+        margin-bottom: 15px;
+        border-radius: 8px;
+        padding: 8px;
+        width: 100% !important;
+    }
+
+    .controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .button-group button {
+        background-color: #1F1F21;
+        color: #B8CBE2;
+        border: 2px solid #B8CBE2;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 300;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .button-group button.active {
+        background-color: #B8CBE2;
+        color: #141414;
+    }
+
+    .button-group button:hover {
+        background-color: #B8CBE2;
+        color: #141414;
+    }
+
+    #dateSlider {
+        width: 60%;
+        accent-color: #B8CBE2;
+    }
+
+    #dateDisplay {
+        font-size: 14px;
+        font-weight: 300;
+        color: #B8CBE2;
+        cursor: pointer;
+        border-bottom: 1px dashed #B8CBE2;
+        display: inline-block;
+        padding: 3px;
+    }
+
+    .controls-bottom {
+        width: 100% !important;
+        display: flex;
+        justify-content: center;
+    }
+
+    #countryFilter {
+        width: 100% !important;
+        max-width: 900px !important;
+    }
+    .choices {
+width: 100% !important;
+max-width: 300px;
+}
+
+.choices__inner {
+background-color: #1F1F21 !important;
+color: #B8CBE2 !important;
+border: 2px solid #B8CBE2 !important;
+border-radius: 4px !important;
+padding: 8px 14px !important;
+font-size: 12px !important;
+font-weight: 300 !important;
+cursor: pointer;
+transition: all 0.3s ease-in-out;
+}
+
+.choices__list--dropdown {
+background-color: #1F1F21 !important;
+border: 2px solid #B8CBE2 !important;
+border-radius: 4px !important;
+box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.choices__list--dropdown .choices__item {
+color: #B8CBE2 !important;
+font-size: 12px !important;
+padding: 8px 14px !important;
+}
+
+.choices__item--selectable {
+background-color: #1F1F21 !important;
+color: #B8CBE2 !important;
+}
+
+.choices__item--selectable.is-highlighted {
+background-color: #B8CBE2 !important;
+color: #141414 !important;
+}
+
+.choices__input {
+background-color: #1F1F21 !important;
+color: #B8CBE2 !important;
+border: none !important;
+}
+
+.choices__button {
+background-color: transparent !important;
+border: none !important;
+color: #B8CBE2 !important;
+cursor: pointer !important;
+font-size: 14px !important;
+}
+
+.choices__button:hover {
+color: #141414 !important;
+background-color: #B8CBE2 !important;
+border-radius: 4px !important;
+}
+@media (max-width: 768px) {
+.button-group button {
+    padding: 4px 8px; /* Reduce padding */
+    font-size: 8px; /* Reduce font size */
+}
+}
+
+
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="controls button-group">
+        <button id="top5Btn">Top 5 Countries by Volume</button>
+        <button id="taxHavensBtn">Corporate Tax Havens</button>
+    </div>
+
+    <canvas id="marketCapChart"></canvas>
+
+    <div class="controls button-group">
+        <button data-measure="volumeTraded" class="active">Volume Traded ($M)</button>
+        <button data-measure="marketCap">Market Cap ($M)</button>
+        <button data-measure="stockCount">Public Companies</button>
+    </div>
+
+    <div class="controls">
+        <input type="range" id="dateSlider" min="0" step="1">
+        <span id="dateDisplay">Loading...</span>
+    </div>
+
+    <div class="controls-bottom">
+        <select id="countryFilter" multiple></select>
+    </div>
+</div>
+
+<script>
+    const url = "https://marketstate-api-318171260121.us-central1.run.app/query?query=SELECT%20*%20FROM%20prod_mart.marketcapbycountry%20LIMIT%203000";
+    let dataFrames = {};
+    let dates = [];
+    let selectedCountries = new Set();
+    let chart;
+    let frameIndex = 0;
+    let selectedMeasure = "volumeTraded";
+    let choicesInstance;
+
+    const taxHavenCountries = [
+        "Cayman Islands", "British Virgin Islands", "Netherlands", "Bahamas", "Switzerland",
+        "Luxembourg", "Hong Kong", "Ireland", "United Arab Emirates", "Monaco",
+        "Bermuda", "Singapore", "Jersey", "Isle of Man", "England", "Panama",
+        "Mauritius", "Malta", "Guernsey", "Samoa"
+    ];
+
+    async function fetchData() {
+        const response = await fetch(url);
+        const jsonResponse = await response.json();
+        const rawData = jsonResponse.data;
+
+        let groupedData = {};
+        let allCountries = new Set();
+
+        rawData.forEach(d => {
+            const dateKey = d.date;
+            if (!groupedData[dateKey]) groupedData[dateKey] = [];
+            groupedData[dateKey].push({
+                country: d.companycountry,
+                volumeTraded: d.volumetradedusdm,
+                marketCap: d.marketcapusdm,
+                stockCount: d.symbolspercountry
+            });
+
+            allCountries.add(d.companycountry);
+        });
+
+        return { groupedData, allCountries: Array.from(allCountries) };
+    }
+
+    async function renderChart() {
+        const { groupedData, allCountries } = await fetchData();
+        dataFrames = groupedData;
+        dates = Object.keys(dataFrames).sort();
+
+        const countryFilter = document.getElementById("countryFilter");
+        allCountries.forEach(country => {
+            let option = document.createElement("option");
+            option.value = country;
+            option.textContent = country;
+            countryFilter.appendChild(option);
+        });
+
+        choicesInstance = new Choices(countryFilter, {
+            removeItemButton: true,
+            searchEnabled: true,
+            placeholderValue: "Filter countries",
+            noResultsText: "No countries found",
+            noChoicesText: "No countries available"
+        });
+
+        countryFilter.addEventListener("change", () => {
+            selectedCountries = new Set(Array.from(countryFilter.selectedOptions).map(opt => opt.value));
+            updateChart();
+        });
+
+        document.querySelectorAll("[data-measure]").forEach(button => {
+            button.addEventListener("click", function () {
+                selectedMeasure = this.dataset.measure;
+                document.querySelectorAll("[data-measure]").forEach(btn => btn.classList.remove("active"));
+                this.classList.add("active");
+                updateChart();
+            });
+        });
+
+        const dateSlider = document.getElementById("dateSlider");
+        dateSlider.max = dates.length - 1;
+        frameIndex = dates.length - 1;
+        dateSlider.value = frameIndex;
+        document.getElementById("dateDisplay").textContent = dates[frameIndex];
+
+        dateSlider.addEventListener("input", () => {
+            frameIndex = parseInt(dateSlider.value);
+            document.getElementById("dateDisplay").textContent = dates[frameIndex];
+            updateChart();
+        });
+
+        document.getElementById("top5Btn").addEventListener("click", () => {
+            const selectedDate = dates[frameIndex];
+            const top5Countries = dataFrames[selectedDate]
+                .sort((a, b) => b.volumeTraded - a.volumeTraded)
+                .slice(0, 5)
+                .map(d => d.country);
+
+            selectedCountries = new Set(top5Countries);
+            updateChart();  // Only update the chart, do not modify the selector
+        });
+
+        document.getElementById("taxHavensBtn").addEventListener("click", () => {
+            selectedCountries = new Set(taxHavenCountries);
+            updateChart();  // Only update the chart, do not modify the selector
+        });
+
+
+        updateChart();
+    }
+
+    function updateChart() {
+        const selectedDate = dates[frameIndex];
+        let marketData = dataFrames[selectedDate].sort((a, b) => b[selectedMeasure] - a[selectedMeasure]);
+
+        if (selectedCountries.size > 0) {
+            marketData = marketData.filter(d => selectedCountries.has(d.country));
+        } else {
+            marketData = marketData.slice(0, 5);
+        }
+
+        const isMobile = window.innerWidth < 768; // Adjust for mobile detection
+
+        chart?.destroy();
+        chart = new Chart(document.getElementById("marketCapChart").getContext("2d"), {
+            type: "bar",
+            data: {
+                labels: marketData.map(d => d.country),
+                datasets: [{ 
+                    data: marketData.map(d => d[selectedMeasure]), 
+                    backgroundColor: "#B8CBE2", 
+                    borderRadius: 5 
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: isMobile ? 4 / 3 : 2, // Dynamic aspect ratio
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+
+    renderChart();
+</script>

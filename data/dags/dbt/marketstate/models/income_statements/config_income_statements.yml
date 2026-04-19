@@ -1,0 +1,218 @@
+models:
+- name: income_statements_all_periods
+  config:
+    schema: stg_prod
+  columns:
+  - name: income_statement_sk
+    tests:
+    - unique
+
+- name: income_statements_annual_metrics
+  config:
+    schema: int_prod
+sources:
+- name: raw
+  description: Raw source tables in BigQuery.
+  database: general-428410
+  schema: src_prod
+  tables:
+  - name: income_statements
+    description: |-
+      Raw income statements from Yahoo Finance.
+      {{ doc('income_statements') }}
+    columns:
+    - name: yfSymbol
+      description: Yahoo Finance symbol.
+      data_type: STRING
+    - name: Date
+      description: Statement datetime.
+      data_type: STRING
+    - name: companyName
+      description: Company name.
+      data_type: STRING
+    - name: processingDate
+      description: Processing date.
+      data_type: STRING
+    - name: periodType
+      description: Statement period type.
+      data_type: STRING
+    - name: Total Revenue
+      description: Total revenue.
+      data_type: FLOAT64
+    - name: Operating Revenue
+      description: Operating revenue.
+      data_type: FLOAT64
+    - name: Cost Of Revenue
+      description: Cost of revenue.
+      data_type: FLOAT64
+    - name: Reconciled Cost Of Revenue
+      description: Reconciled cost of revenue.
+      data_type: FLOAT64
+    - name: Gross Profit
+      description: Gross profit.
+      data_type: FLOAT64
+    - name: Research And Development
+      description: Research and development.
+      data_type: FLOAT64
+    - name: Selling General And Administration
+      description: Selling, general, and administration.
+      data_type: FLOAT64
+    - name: Selling And Marketing Expense
+      description: Selling and marketing expense.
+      data_type: FLOAT64
+    - name: General And Administrative Expense
+      description: General and administrative expense.
+      data_type: FLOAT64
+    - name: Other Gand A
+      description: Other G and A.
+      data_type: FLOAT64
+    - name: Other Operating Expenses
+      description: Other operating expenses.
+      data_type: FLOAT64
+    - name: Operating Expense
+      description: Operating expense.
+      data_type: FLOAT64
+    - name: Operating Income
+      description: Operating income.
+      data_type: FLOAT64
+    - name: Total Operating Income As Reported
+      description: Total operating income as reported.
+      data_type: FLOAT64
+    - name: Other Income Expense
+      description: Other income expense.
+      data_type: FLOAT64
+    - name: Other Non Operating Income Expenses
+      description: Other non operating income expenses.
+      data_type: FLOAT64
+    - name: Net Non Operating Interest Income Expense
+      description: Net non operating interest income expense.
+      data_type: FLOAT64
+    - name: Interest Expense
+      description: Interest expense.
+      data_type: FLOAT64
+    - name: Interest Income
+      description: Interest income.
+      data_type: FLOAT64
+    - name: Interest Expense Non Operating
+      description: Interest expense non operating.
+      data_type: FLOAT64
+    - name: Interest Income Non Operating
+      description: Interest income non operating.
+      data_type: FLOAT64
+    - name: Net Interest Income
+      description: Net interest income.
+      data_type: FLOAT64
+    - name: Special Income Charges
+      description: Special income charges.
+      data_type: FLOAT64
+    - name: Restructuring And Mergern Acquisition
+      description: Restructuring and merger and acquisition.
+      data_type: FLOAT64
+    - name: Write Off
+      description: Write off.
+      data_type: FLOAT64
+    - name: Gain On Sale Of Security
+      description: Gain on sale of security.
+      data_type: FLOAT64
+    - name: Gain On Sale Of Business
+      description: Gain on sale of business.
+      data_type: FLOAT64
+    - name: EBITDA
+      description: EBITDA.
+      data_type: FLOAT64
+    - name: Normalized EBITDA
+      description: Normalized EBITDA.
+      data_type: FLOAT64
+    - name: EBIT
+      description: EBIT.
+      data_type: FLOAT64
+    - name: Pretax Income
+      description: Pretax income.
+      data_type: FLOAT64
+    - name: Tax Provision
+      description: Tax provision.
+      data_type: FLOAT64
+    - name: Tax Rate For Calcs
+      description: Tax rate for calcs.
+      data_type: FLOAT64
+    - name: Tax Effect Of Unusual Items
+      description: Tax effect of unusual items.
+      data_type: FLOAT64
+    - name: Net Income From Continuing Operation Net Minority Interest
+      description: Net income from continuing operation net minority interest.
+      data_type: FLOAT64
+    - name: Net Income Continuous Operations
+      description: Net income continuous operations.
+      data_type: FLOAT64
+    - name: Net Income From Continuing And Discontinued Operation
+      description: Net income from continuing and discontinued operation.
+      data_type: FLOAT64
+    - name: Net Income Including Noncontrolling Interests
+      description: Net income including noncontrolling interests.
+      data_type: FLOAT64
+    - name: Net Income Common Stockholders
+      description: Net income common stockholders.
+      data_type: FLOAT64
+    - name: Net Income
+      description: Net income.
+      data_type: FLOAT64
+    - name: Normalized Income
+      description: Normalized income.
+      data_type: FLOAT64
+    - name: Basic Average Shares
+      description: Basic average shares.
+      data_type: FLOAT64
+    - name: Diluted Average Shares
+      description: Diluted average shares.
+      data_type: FLOAT64
+    - name: Basic EPS
+      description: Basic EPS.
+      data_type: FLOAT64
+    - name: Diluted EPS
+      description: Diluted EPS.
+      data_type: FLOAT64
+    - name: Diluted NI Availto Com Stockholders
+      description: Diluted net income available to common stockholders.
+      data_type: FLOAT64
+    - name: Total Unusual Items
+      description: Total unusual items.
+      data_type: FLOAT64
+    - name: Total Unusual Items Excluding Goodwill
+      description: Total unusual items excluding goodwill.
+      data_type: FLOAT64
+    - name: Depreciation Income Statement
+      description: Depreciation income statement.
+      data_type: FLOAT64
+    - name: Depreciation And Amortization In Income Statement
+      description: Depreciation and amortization in income statement.
+      data_type: FLOAT64
+    - name: Amortization Of Intangibles Income Statement
+      description: Amortization of intangibles income statement.
+      data_type: FLOAT64
+    - name: Amortization
+      description: Amortization.
+      data_type: FLOAT64
+    - name: Earnings From Equity Interest
+      description: Earnings from equity interest.
+      data_type: FLOAT64
+    - name: Minority Interests
+      description: Minority interests.
+      data_type: FLOAT64
+    - name: Preferred Stock Dividends
+      description: Preferred stock dividends.
+      data_type: FLOAT64
+    - name: Excise Taxes
+      description: Excise taxes.
+      data_type: FLOAT64
+    - name: Total Expenses
+      description: Total expenses.
+      data_type: FLOAT64
+    - name: Total Other Finance Cost
+      description: Total other finance cost.
+      data_type: FLOAT64
+    - name: marketCapUSD
+      description: Market cap USD.
+      data_type: FLOAT64
+    - name: alphaBucket
+      description: Alpha bucket.
+      data_type: INT64

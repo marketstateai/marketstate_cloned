@@ -1,0 +1,39 @@
+models:
+- name: int_listings
+  config:
+    schema: int_prod
+  description: |-
+    Exchange listings derived from `stg_stocks` and `exchanges`.
+    Grain: one row per (market_identifier_code, yf_symbol).
+  columns:
+  - name: listing_sk
+    description: Surrogate key hash of market_identifier_code + yf_symbol.
+    tests:
+    - not_null
+    - unique
+    data_type: string
+  - name: market_identifier_code
+    description: Exchange MIC.
+    tests:
+    - not_null
+    data_type: string
+  - name: yf_symbol
+    description: Yahoo Finance symbol.
+    tests:
+    - not_null
+    data_type: string
+  - name: exchange_name
+    description: Exchange name.
+    data_type: string
+  - name: country
+    description: Exchange country.
+    data_type: string
+  - name: exchange_currency
+    description: Exchange trading currency code.
+    data_type: string
+  - name: company_currency
+    description: Company reporting currency code.
+    data_type: string
+  - name: last_seen_capture_date
+    description: Most recent capture_date observed for this listing.
+    data_type: date

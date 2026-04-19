@@ -1,0 +1,338 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Market Cap</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Kumbh Sans', sans-serif;
+        font-weight: 300;
+        text-align: left;
+        background-color: #141414;
+        margin: 0;
+        padding: 20px;
+        color: white;
+    }
+
+    .container {
+        width: 100%;
+        max-width: none;
+        margin: 0 auto;
+        padding: 20px;
+        background: #1e1e1e;
+        border-radius: 12px;
+    }
+
+    canvas {
+        margin-bottom: 15px;
+        border-radius: 8px;
+        padding: 8px;
+        width: 100% !important;
+        background: transparent;
+    }
+
+    h2 {
+        color: #B8CBE2;
+        font-weight: 700;
+        font-size: 1.2em;
+        text-align: left;
+        margin: 0;
+        background: transparent !important;
+        display: inline-block;
+    }
+
+    .subtitle {
+        font-size: 0.9em;
+        color: #B8CBE2;
+        text-align: left;
+        margin-top: 5px;
+        background: transparent !important;
+        display: inline-block;
+    }
+
+    /* Media Query for mobile */
+    @media (max-width: 768px) {
+        h2 {
+            font-size: 1em; /* Adjust title size on mobile */
+        }
+
+        .subtitle {
+            font-size: 0.8em; /* Adjust subtitle size on mobile */
+        }
+
+        /* Stack everything vertically and left-align */
+        .toggle-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 15px;
+        }
+
+        /* Ensure buttons are inline on mobile */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap; /* Allows wrapping in case of narrow screens */
+            justify-content: flex-start;
+        }
+
+        .button-group input[type="radio"] {
+            display: none;
+        }
+
+        .button-group label {
+            background-color: #1F1F21;
+            color: #B8CBE2;
+            border: 2px solid #B8CBE2;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 300;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .button-group input[type="radio"]:checked + label {
+            background-color: #B8CBE2;
+            color: #141414;
+        }
+
+        .button-group label:hover {
+            background-color: #B8CBE2;
+            color: #141414;
+        }
+    }
+
+    /* Button-style Radio Buttons */
+    .toggle-container {
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: flex-start;
+        margin-top: 15px;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-start;
+    }
+
+    .button-group input[type="radio"] {
+        display: none;
+    }
+
+    .button-group label {
+        background-color: #1F1F21;
+        color: #B8CBE2;
+        border: 2px solid #B8CBE2;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 300;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .button-group input[type="radio"]:checked + label {
+        background-color: #B8CBE2;
+        color: #141414;
+    }
+
+    .button-group label:hover {
+        background-color: #B8CBE2;
+        color: #141414;
+    }
+
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>The Global Market in One View</h2>
+    <div class="toggle-container">
+        <div class="button-group">
+            <input type="radio" id="1day" name="period" value="1">
+            <label for="1day">1 Day</label>
+            
+            <input type="radio" id="7days" name="period" value="7" checked>
+            <label for="7days">7 Days</label>
+            
+            <input type="radio" id="30days" name="period" value="30">
+            <label for="30days">30 Days</label>
+        </div>
+    </div>
+
+    <div class="subtitle" id="subtitle1"></div> <!-- First subtitle -->
+    <div class="subtitle" id="subtitle2"></div> <!-- Second subtitle -->
+    <div class="subtitle" id="subtitle3"></div> <!-- Third subtitle (top gainer country) -->
+    <div class="subtitle" id="subtitle4"></div> <!-- Fourth subtitle (top loser country) -->
+    <canvas id="marketCapChartUnique"></canvas>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const apiURL = "https://marketstate-api-318171260121.us-central1.run.app/query?query=";
+        let allData = []; // This will hold all the data fetched initially
+        let chartInstance = null; // Variable to store the chart instance
+
+        // Fetch the data once on page load
+        async function fetchData() {
+            try {
+                // Remove the LIMIT and fetch all available data
+                const response = await fetch(apiURL + encodeURIComponent(`SELECT date, globalmarketcap, top_gainer_country, top_gainer_percent_change, top_loser_country, top_loser_percent_change FROM prod_mart.market_cap_daily_change`));
+                if (!response.ok) throw new Error(`Error: ${response.status}`);
+                const data = await response.json();
+                allData = data.data.map(d => ({
+                    ...d,
+                    formattedDate: new Date(d.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }).replace(',', '')
+                }));
+
+                // Sort data by date in descending order (most recent first)
+                allData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                renderChart(); // Render the chart after fetching the data
+                updateTitleAndSubtitles(); // Update the title and subtitles after fetching the data
+            } catch (error) {
+                console.error("Data fetch error:", error);
+            }
+        }
+
+        // Filter data based on the selected period
+        function filterDataByPeriod(period) {
+            let filteredData;
+            const totalDays = allData.length;
+
+            switch (period) {
+                case 1:
+                    filteredData = allData.slice(0, 1); // Get the most recent 1 day
+                    break;
+                case 7:
+                    filteredData = allData.slice(0, 7); // Get the most recent 7 days
+                    break;
+                case 30:
+                    filteredData = allData.slice(0, 30); // Get the most recent 30 days
+                    break;
+                default:
+                    filteredData = allData; // Full data if no specific period is selected
+                    break;
+            }
+
+            return filteredData;
+        }
+
+        // Handle period toggle
+        document.querySelectorAll('input[name="period"]').forEach(input => {
+            input.addEventListener('change', (event) => {
+                const selectedPeriod = parseInt(event.target.value, 10); // Get selected period
+                renderChart(selectedPeriod);  // Re-render the chart when the period changes
+                updateTitleAndSubtitles(selectedPeriod); // Update title and subtitles when the period changes
+            });
+        });
+
+        async function updateTitleAndSubtitles(period = 7) {
+            const data = filterDataByPeriod(period);
+
+            if (data.length < 2) return; // Ensure we have enough data
+
+            const firstDayCap = data[data.length - 1].globalmarketcap; // First day market cap
+            const lastDayCap = data[0].globalmarketcap; // Most recent day market cap
+
+            // Calculate global market cap change and round to 1 dp
+            const changePercent = ((lastDayCap - firstDayCap) / firstDayCap) * 100;
+            const changeText = changePercent >= 0 ? `+${changePercent.toFixed(1)}%` : `${changePercent.toFixed(1)}%`;
+
+            // Combine both global market cap values and the percentage change into one subtitle
+            document.querySelector("#subtitle1").innerHTML = `Global change: ${(firstDayCap / 1_000_000).toFixed(1)}T to ${(lastDayCap / 1_000_000).toFixed(1)}T (${changeText})`;
+
+            // Find the top gainer (max positive percentage), round to 1 dp, and update the third subtitle
+            let topGainer = data.reduce((max, current) => 
+                current.top_gainer_percent_change > max.top_gainer_percent_change ? current : max
+            );
+            const topGainerCountry = topGainer.top_gainer_country;
+            const topGainerPercent = topGainer.top_gainer_percent_change.toFixed(1); // 1 dp
+            document.querySelector("#subtitle3").innerHTML = `Top daily gainer: ${topGainerCountry} (+${topGainerPercent}%)`;
+
+            // Find the top loser (max negative percentage), round to 1 dp, and update the fourth subtitle
+            let topLoser = data.reduce((min, current) => 
+                current.top_loser_percent_change < min.top_loser_percent_change ? current : min
+            );
+            const topLoserCountry = topLoser.top_loser_country;
+            const topLoserPercent = topLoser.top_loser_percent_change.toFixed(1); // 1 dp
+            document.querySelector("#subtitle4").innerHTML = `Top daily loser: ${topLoserCountry} (${topLoserPercent}%)`;
+        }
+
+        async function renderChart(period = 7) {
+            const data = filterDataByPeriod(period);
+            if (!data.length) return;
+
+            // Destroy the existing chart instance if it exists
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const isMobile = window.innerWidth < 768; // Adjust threshold as needed
+
+            // Create a new chart instance
+            chartInstance = new Chart(document.getElementById("marketCapChartUnique"), {
+                type: "bar",
+                data: {
+                    labels: data.map(d => d.formattedDate).reverse(),
+                    datasets: [
+                        { label: "Top Gainer %", data: data.map(d => d.top_gainer_percent_change).reverse(), backgroundColor: "#B8E2B8", yAxisID: 'y', borderRadius: 8 },
+                        { label: "Top Loser %", data: data.map(d => -Math.abs(d.top_loser_percent_change)).reverse(), backgroundColor: "#E2B8B8", yAxisID: 'y', borderRadius: 8 },
+                        { label: "Global Market Cap (T USD)", data: data.map(d => d.globalmarketcap / 1_000_000).reverse(), borderColor: "#E1E3E8", backgroundColor: "transparent", type: "line", yAxisID: 'y1', stepped: true }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: isMobile ? 4 / 3 : 1.5, // Dynamic aspect ratio
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const d = data[data.length - 1 - context.dataIndex];
+                                    return context.datasetIndex === 0 ? `${d.top_gainer_country}: +${context.raw}%` :
+                                        context.datasetIndex === 1 ? `${d.top_loser_country}: ${context.raw}%` :
+                                        `Global market cap: ${context.raw.toFixed(1)}T USD`; 
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { 
+                                color: "#B8CBE2",
+                                maxTicksLimit: 8,
+                                autoSkip: true,
+                                maxRotation: 45,
+                                minRotation: 0
+                            }
+                        },
+                        y: { 
+                            beginAtZero: true, 
+                            title: { display: true, text: "% Change by Country", color: "#B8CBE2" }, 
+                            grid: { display: false }, 
+                            ticks: { color: "#B8CBE2" } 
+                        },
+                        y1: { 
+                            position: 'right', 
+                            title: { display: true, text: "Global Market Cap (T USD)", color: "#B8CBE2" }, 
+                            ticks: { 
+                                color: "#B8CBE2", 
+                                callback: value => value.toFixed(1),
+                                min: 80 // Set min value to 80T
+                            } 
+                        }
+                    }
+                }
+            });
+        }
+
+        fetchData(); // Initial data fetch and chart rendering
+        updateTitleAndSubtitles(); // Initial subtitle update
+    });
+</script>

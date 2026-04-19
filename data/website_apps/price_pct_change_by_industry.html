@@ -1,0 +1,291 @@
+<!-- Load Chart.js and fonts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+  .container {
+    font-family: 'Kumbh Sans', sans-serif;
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 2vw;
+    max-width: 100%;
+    margin: auto;
+    color: #B8CBE2;
+  }
+
+  h2 {
+    color: #B8CBE2;
+    font-weight: 700;
+    font-size: 1.2em;
+    margin-bottom: 1em;
+  }
+
+  .table-wrapper {
+    max-height: 50vh;
+    overflow-y: auto;
+    overflow-x: auto;
+    border-radius: 10px;
+    scrollbar-color: #2A2A2C #1e1e1e;
+    scrollbar-width: thin;
+  }
+
+  .table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .table-wrapper::-webkit-scrollbar-track {
+    background: #1e1e1e;
+  }
+
+  .table-wrapper::-webkit-scrollbar-thumb {
+    background-color: #2A2A2C;
+    border-radius: 4px;
+  }
+
+  table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    background-color: #1F1F21;
+  }
+
+  th, td {
+    padding: 12px 10px;
+    font-size: 14px;
+    color: #B8CBE2;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  th {
+    background-color: #2A2A2C;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    cursor: pointer;
+  }
+
+  th:nth-child(3), td:nth-child(3) {
+    width: 25%;
+  }
+
+  tr:nth-child(even) {
+    background-color: #141414;
+  }
+
+  .chart-container {
+    position: relative;
+    width: 100%;
+    height: 160px;
+  }
+
+  .chart-container canvas {
+    width: 100% !important;
+    height: 160px !important;
+    pointer-events: auto !important;
+  }
+
+  .positive {
+    color: #B8E2B8;
+  }
+
+  .negative {
+    color: #E2B8B8;
+  }
+
+  .chartjs-tooltip {
+    position: absolute !important;
+    background: #141414ee;
+    color: #B8CBE2;
+    padding: 6px 10px;
+    border-radius: 4px;
+    pointer-events: none;
+    font-size: 12px;
+    z-index: 999999 !important;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    th, td {
+      font-size: 12px;
+      padding: 8px;
+    }
+  }
+</style>
+
+<div class="container">
+  <h2>Industry Percentage Change</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Industry (sector)</th>
+          <th onclick="sortTable(1)">Industry Count</th>
+          <th style="width: 25%;">Top Countries (Bars)</th>
+          <th onclick="sortTable(2)">% Change 1Y</th>
+          <th onclick="sortTable(3)">% Change 5Y</th>
+          <th onclick="sortTable(4)">% Change 10Y</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const apiURL = "https://marketstate-api-318171260121.us-central1.run.app/query?query=";
+  const query = `SELECT * FROM prod_mart.yf_pct_change_by_industry LIMIT 500`;
+
+  function createTooltipElement(container) {
+    let tooltip = container.querySelector(".chartjs-tooltip");
+    if (!tooltip) {
+      tooltip = document.createElement("div");
+      tooltip.className = "chartjs-tooltip";
+      container.appendChild(tooltip);
+    }
+    return tooltip;
+  }
+
+  function externalTooltipHandler(context) {
+    const tooltip = context.tooltip;
+    const chart = context.chart;
+    const container = chart.canvas.closest(".chart-container");
+    const tooltipEl = createTooltipElement(container);
+
+    if (tooltip.opacity === 0) {
+      tooltipEl.style.opacity = 0;
+      return;
+    }
+
+    const { dataIndex, label, parsed } = tooltip.dataPoints[0];
+    const count = chart._counts?.[dataIndex] || "?";
+    tooltipEl.innerHTML = `<strong>${label}</strong>: ${parsed.x.toFixed(1)}% (${count} companies)`;
+    tooltipEl.style.opacity = 1;
+
+    const canvasRect = chart.canvas.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    const offsetLeft = canvasRect.left - containerRect.left;
+    const offsetTop = canvasRect.top - containerRect.top;
+
+    tooltipEl.style.left = `${offsetLeft + tooltip.caretX}px`;
+    tooltipEl.style.top = `${offsetTop + tooltip.caretY}px`;
+  }
+
+  function cleanTopCountries(str) {
+    if (!str || !str.startsWith("[")) return "[]";
+    return str.replace(/}\s*{/g, '}, {').replace(/'/g, '"');
+  }
+
+  let globalRows = [];
+
+  async function fetchData() {
+    try {
+      const res = await fetch(apiURL + encodeURIComponent(query));
+      const result = await res.json();
+      globalRows = result.data;
+      renderTable(globalRows);
+    } catch (e) {
+      console.error("Fetch error", e);
+      document.getElementById("table-body").innerHTML = "<tr><td colspan='6'>Error loading data</td></tr>";
+    }
+  }
+
+  function renderTable(data) {
+    const tableBody = document.getElementById("table-body");
+    tableBody.innerHTML = "";
+
+    data.forEach((row, index) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${row.industry}</td>
+        <td>${row.industry_count}</td>
+        <td style="width: 25%;"><div class="chart-container"><canvas id="chart-${index}"></canvas></div></td>
+        <td class="${row.pct_change_1y >= 0 ? 'positive' : 'negative'}">${row.pct_change_1y}%</td>
+        <td class="${row.pct_change_5y >= 0 ? 'positive' : 'negative'}">${row.pct_change_5y}%</td>
+        <td class="${row.pct_change_10y >= 0 ? 'positive' : 'negative'}">${row.pct_change_10y}%</td>
+      `;
+      tableBody.appendChild(tr);
+
+      try {
+        const parsed = JSON.parse(cleanTopCountries(row.top_countries));
+        const topThree = parsed.slice(0, 3);
+        const labels = topThree.map(c => c.top_country);
+        const values = topThree.map(c => c.percentage_of_industry);
+        const counts = topThree.map(c => c.country_company_count);
+
+        const total = values.reduce((sum, val) => sum + val, 0);
+        const remainder = Math.max(0, 100 - total);
+        if (remainder > 0.5) {
+          labels.push("Others");
+          values.push(parseFloat(remainder.toFixed(1)));
+          const knownCount = counts.reduce((sum, val) => sum + (parseInt(val) || 0), 0);
+          const otherCount = row.industry_count - knownCount;
+          counts.push(otherCount > 0 ? otherCount : "—");
+        }
+
+        const ctx = document.getElementById(`chart-${index}`);
+        const chart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [{
+              data: values,
+              backgroundColor: ['#A0D8EF', '#F4A7B9', '#FFE29A', '#D3D3D3'],
+              borderColor: '#141414',
+              borderWidth: 1,
+              minBarLength: 2 // Ensure visibility for very small bars
+            }]
+          },
+          options: {
+            indexAxis: 'y', // ← makes the bars horizontal
+            maintainAspectRatio: false,
+            responsive: true,
+            layout: { padding: 5 },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                enabled: false,
+                external: externalTooltipHandler
+              }
+            },
+            scales: {
+              x: {
+                display: false,
+                max: 100
+              },
+              y: {
+                display: false
+              }
+            }
+          }
+        });
+
+        chart._counts = counts;
+      } catch (err) {
+        console.warn(`Parse error at row ${index}:`, err);
+      }
+    });
+  }
+
+  let sortDirection = {};
+  function sortTable(index) {
+    const keyMap = {
+      1: "industry_count",
+      2: "pct_change_1y",
+      3: "pct_change_5y",
+      4: "pct_change_10y"
+    };
+    const key = keyMap[index];
+    const dir = sortDirection[key] === "asc" ? "desc" : "asc";
+    sortDirection[key] = dir;
+    globalRows.sort((a, b) => dir === "asc" ? a[key] - b[key] : b[key] - a[key]);
+    renderTable(globalRows);
+  }
+
+  document.addEventListener("DOMContentLoaded", fetchData);
+</script>

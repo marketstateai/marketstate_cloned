@@ -1,0 +1,3 @@
+packages:
+  - git: "https://github.com/data-mie/dbt-profiler.git"
+    revision: "main"

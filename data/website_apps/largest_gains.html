@@ -1,0 +1,294 @@
+<style>
+  #top-gainers {
+    background: #141414;
+    font-family: 'Kumbh Sans', sans-serif;
+    padding: 2vw;
+    color: #B8CBE2;
+    border-radius: 12px;
+    margin: auto;
+  }
+
+  #top-gainers h2 {
+    color: #B8CBE2;
+    font-weight: 700;
+    font-size: 1.2em;
+    margin-bottom: 0.5em;
+  }
+
+  #top-gainers .gainers-subtitle {
+    font-size: 0.9em;
+    color: #B8CBE2;
+    margin-bottom: 1em;
+  }
+
+  #top-gainers .gainers-filter-container {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 1em;
+  }
+
+  #top-gainers .gainers-filter-container select {
+    font-size: 13px;
+    padding: 6px 28px 6px 10px;
+    background-color: #1F1F21;
+    color: #B8CBE2;
+    border: 1px solid #444;
+    border-radius: 6px;
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%23B8CBE2' height='20' viewBox='0 0 24 24' width='20'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px;
+  }
+
+  #top-gainers .gainers-table-wrapper {
+    max-height: 60vh;
+    overflow-y: auto;
+    overflow-x: auto;
+    border-radius: 8px;
+    background-color: #1e1e1e;
+    scrollbar-color: #444 #1e1e1e;
+    scrollbar-width: thin;
+  }
+
+  #top-gainers .gainers-table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: #1F1F21;
+    font-size: 13px;
+  }
+
+  #top-gainers th,
+  #top-gainers td {
+    padding: 6px 10px;
+    color: #B8CBE2;
+    text-align: left;
+    border: 1px solid #333;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  #top-gainers th {
+    background-color: #262628;
+    color: #FBC02D;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    cursor: pointer;
+  }
+
+  #top-gainers td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background: #000 !important;
+    color: #FBC02D;
+    min-width: 180px;
+    max-width: 250px;
+  }
+
+  #top-gainers thead th:first-child {
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 15;
+    background: #000 !important;
+    color: #FBC02D;
+  }
+
+  #top-gainers tr:nth-child(even) td {
+    background-color: #1c1c1c;
+  }
+
+  #top-gainers tr:hover td {
+    background-color: #2A2A2A;
+  }
+
+  #top-gainers .truncate {
+    display: inline-block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    vertical-align: bottom;
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to right, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%);
+  }
+
+  #top-gainers .exchange-symbol {
+    font-size: 11px;
+    color: #525D68;
+  }
+
+  #top-gainers .positive {
+    color: #B8E2B8 !important;
+  }
+
+  #top-gainers .negative {
+    color: #E2B8B8 !important;
+  }
+
+  @media (max-width: 768px) {
+    #top-gainers .gainers-table {
+      font-size: 11px;
+    }
+    #top-gainers th,
+    #top-gainers td {
+      padding: 4px 6px;
+    }
+    #top-gainers td:first-child {
+      max-width: 40vw;
+      width: 40vw;
+    }
+    #top-gainers .truncate {
+      max-width: 40vw;
+      -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+      mask-image: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+    }
+  }
+</style>
+
+<div id="top-gainers">
+  <h2>Top 100 Gainers</h2>
+  <p id="gainers-reference-date" class="gainers-subtitle"></p>
+
+  <div class="gainers-filter-container">
+    <select id="gainers-exchange-filter">
+      <option value="all">All Exchanges</option>
+    </select>
+  </div>
+
+  <div class="gainers-table-wrapper">
+    <table class="gainers-table">
+      <thead>
+        <tr id="gainers-table-headers"></tr>
+      </thead>
+      <tbody id="gainers-market-data"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+(function () {
+  let gainersFullData = [];
+  let gainersFilteredData = [];
+  let gainersSortDirection = {};
+
+  const apiBaseUrl = "https://marketstate-api-318171260121.us-central1.run.app/query?query=";
+  const query = `SELECT 
+      company_name AS Company, 
+      price_change_d1 * -1 AS "1D Change (%)", 
+      price_change_d5 * -1 AS "5D Change (%)", 
+      price_change_d30 * -1 AS "30D Change (%)", 
+      exchange_name AS "Exchange Name", 
+      exchange_symbol AS Symbol, 
+      MAX(max_date) AS reference_date
+    FROM prod_mart.ts_diff_filled_pivot 
+    WHERE volume_traded_usd_d1 > 10e6 AND market_cap_d1 > 10e6 
+    GROUP BY Symbol, "Exchange Name", Company, "1D Change (%)", "5D Change (%)", "30D Change (%)"
+    ORDER BY (price_change_d1 * -1) DESC
+    LIMIT 100`;
+
+  async function gainersFetchData() {
+    try {
+      const response = await fetch(apiBaseUrl + encodeURIComponent(query));
+      const result = await response.json();
+      gainersFullData = result.data;
+      gainersFilteredData = [...gainersFullData];
+      renderTable(gainersFilteredData);
+      populateExchangeFilter(gainersFullData);
+      updateReferenceDate(gainersFullData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      document.getElementById("gainers-market-data").innerHTML =
+        "<tr><td colspan='8'>Error fetching data. Check console for details.</td></tr>";
+    }
+  }
+
+  function renderTable(data) {
+    if (data.length === 0) return;
+
+    const headers = Object.keys(data[0]).filter(h => h !== "reference_date");
+    const thead = document.getElementById("gainers-table-headers");
+    const tbody = document.getElementById("gainers-market-data");
+
+    thead.innerHTML = headers
+      .map(header => {
+        const headerText =
+          header.includes("Change") ? header.replace(" (%)", "") + "%" :
+          header.charAt(0).toUpperCase() + header.slice(1).replace(/_/g, " ");
+        return `<th data-col="${header}">${headerText}</th>`;
+      })
+      .join("");
+
+    tbody.innerHTML = data
+      .map(row => {
+        return `<tr>${headers.map(header => {
+          if (header === "Company") {
+            return `<td>
+              <div style="display:flex; flex-direction:column;">
+                <span class="truncate">${row[header]}</span>
+                <span class="exchange-symbol">${row["Symbol"] || ""}</span>
+              </div>
+            </td>`;
+          }
+          let rawVal = row[header];
+          let className = "";
+          let displayVal = rawVal;
+          if (header.includes("Change")) {
+            const num = parseFloat(rawVal);
+            if (!isNaN(num)) {
+              displayVal = num.toFixed(2) + "%";
+              className = num > 0 ? "positive" : num < 0 ? "negative" : "";
+            }
+          }
+          return `<td class="${className}">${displayVal}</td>`;
+        }).join("")}</tr>`;
+      })
+      .join("");
+
+    thead.querySelectorAll("th").forEach(th => {
+      th.addEventListener("click", () => sortTable(th.dataset.col));
+    });
+  }
+
+  function sortTable(col) {
+    gainersSortDirection[col] = !gainersSortDirection[col];
+    gainersFilteredData.sort((a, b) => {
+      const valA = parseFloat(a[col]);
+      const valB = parseFloat(b[col]);
+      if (isNaN(valA) || isNaN(valB)) return 0;
+      return gainersSortDirection[col] ? valA - valB : valB - valA;
+    });
+    renderTable(gainersFilteredData);
+  }
+
+  function populateExchangeFilter(data) {
+    const select = document.getElementById("gainers-exchange-filter");
+    const exchanges = [...new Set(data.map(r => r["Exchange Name"]))].sort();
+    select.innerHTML =
+      `<option value="all">All Exchanges</option>` +
+      exchanges.map(ex => `<option value="${ex}">${ex}</option>`).join("");
+    select.addEventListener("change", () => {
+      const selected = select.value;
+      gainersFilteredData =
+        selected === "all" ? [...gainersFullData] : gainersFullData.filter(r => r["Exchange Name"] === selected);
+      renderTable(gainersFilteredData);
+    });
+  }
+
+  function updateReferenceDate(data) {
+    if (data.length > 0) {
+      document.getElementById("gainers-reference-date").innerText =
+        `Reference date: ${data[0]["reference_date"]}`;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", gainersFetchData);
+})();
+</script>

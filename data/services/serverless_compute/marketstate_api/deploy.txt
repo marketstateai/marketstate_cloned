@@ -1,0 +1,61 @@
+1) Specify amd64 if running GCE
+    docker buildx build --platform linux/amd64 -t marketstate_api .
+    
+
+2) Mount OS ENV vars if run local, else attach service account - POSSIBLE TO MOUNT SERVICE ACCOUNT OR ADD IN DOCKERFILE (NOT RECOMMENDED)
+    docker run \
+        -e POSTGRES_ADMIN="$POSTGRES_ADMIN" \
+        -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+        -e POSTGRES_HOST="$POSTGRES_HOST" \
+        -p 8080:8080 \
+        marketstate_api
+
+
+3) Create repository
+gcloud artifacts repositories create marketstate-api \
+    --repository-format=docker \
+    --location=us-central1
+
+
+4) For Cloud Run + Cloud SQL, you need to use their AUTH
+    gcloud projects add-iam-policy-binding general-428410 \
+        --member=serviceAccount:318171260121-compute@developer.gserviceaccount.com \
+        --role=roles/cloudsql.client
+
+
+5) Tag image with latest
+    sudo docker tag marketstate_api:latest \
+    us-central1-docker.pkg.dev/general-428410/marketstate-api/marketstate-api:latest
+
+
+6) Push to artifact repo
+    sudo docker push us-central1-docker.pkg.dev/general-428410/marketstate-api/marketstate-api:latest
+
+
+7) Deploy
+    gcloud run deploy marketstate-api \
+        --image=us-central1-docker.pkg.dev/general-428410/marketstate-api/marketstate-api:latest \
+        --allow-unauthenticated \
+        --port=8080 \
+        --service-account=318171260121-compute@developer.gserviceaccount.com \
+        --concurrency=10 \
+        --max-instances=1 \
+        --set-env-vars POSTGRES_PASSWORD="$POSTGRES_PASSWORD",POSTGRES_ADMIN="$POSTGRES_ADMIN",POSTGRES_HOST="$POSTGRES_HOST" \
+        --execution-environment=gen1 \
+        --region=us-central1 \
+        --project=general-428410 \
+        --set-cloudsql-instances=general-428410:us-central1:marketstate
+
+
+8) Test
+    Start API locally
+    uvicorn main:app --host 0.0.0.0 --port 8080
+
+    curl http://localhost:8080/health -- is working at all?
+
+    curl "http://localhost:8080/query?query=SELECT%20*%20FROM%20prod_mart.marketcapbycountry%20LIMIT%2010"
+
+    Cloud Run URL format
+    curl "https://marketstate-api-318171260121.us-central1.run.app/query?query=SELECT%20*%20FROM%20prod_mart.marketcapbycountry%20LIMIT%202000"
+
+

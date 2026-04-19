@@ -1,0 +1,13 @@
+models:
+- name: bytes_billed_by_day
+  config:
+    schema: expenses
+  description: Daily BigQuery jobs summary with total bytes billed and unit conversions.
+- name: bytes_billed_by_month
+  config:
+    schema: expenses
+  description: Monthly BigQuery bytes billed with unit conversions and percent of 1 TiB.
+- name: bytes_billed_by_query_most_recent
+  config:
+    schema: expenses
+  description: Most recent BigQuery jobs with user, query text, and bytes billed.

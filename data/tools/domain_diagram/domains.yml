@@ -1,0 +1,145 @@
+{
+  "version": 2,
+  "entities": [
+    {
+      "name": "dim_time",
+      "domain": "standards",
+      "columns": [
+        {"name": "date_sk", "type": "string", "pk": true},
+        {"name": "date", "type": "date"},
+        {"name": "year", "type": "int"},
+        {"name": "month", "type": "int"}
+      ]
+    },
+    {
+      "name": "dim_currency",
+      "domain": "exchange_rates",
+      "columns": [
+        {"name": "currency_sk", "type": "string", "pk": true},
+        {"name": "currency", "type": "string"},
+        {"name": "currency_name", "type": "string"}
+      ]
+    },
+    {
+      "name": "dim_exchange",
+      "domain": "exchanges",
+      "columns": [
+        {"name": "exchange_sk", "type": "string", "pk": true},
+        {"name": "market_identifier_code", "type": "string"},
+        {"name": "exchange_name", "type": "string"},
+        {"name": "currency_sk", "type": "string", "fk": true}
+      ]
+    },
+    {
+      "name": "dim_gics",
+      "domain": "standards",
+      "columns": [
+        {"name": "gics_sk", "type": "string", "pk": true},
+        {"name": "sector_code", "type": "int"},
+        {"name": "industry_group_code", "type": "int"},
+        {"name": "industry_code", "type": "int"},
+        {"name": "sub_industry_code", "type": "int"}
+      ]
+    },
+    {
+      "name": "dim_company",
+      "domain": "companies",
+      "columns": [
+        {"name": "company_sk", "type": "string", "pk": true},
+        {"name": "company_name", "type": "string"},
+        {"name": "yf_symbol", "type": "string"},
+        {"name": "gics_sk", "type": "string", "fk": true}
+      ]
+    },
+    {
+      "name": "fact_income_statement",
+      "domain": "income_statements",
+      "columns": [
+        {"name": "income_statement_sk", "type": "string", "pk": true},
+        {"name": "company_sk", "type": "string", "fk": true},
+        {"name": "exchange_sk", "type": "string", "fk": true},
+        {"name": "currency_sk", "type": "string", "fk": true},
+        {"name": "date_sk", "type": "string", "fk": true},
+        {"name": "period", "type": "string"},
+        {"name": "total_revenue_usd", "type": "float"},
+        {"name": "profit_margin", "type": "float"}
+      ]
+    },
+    {
+      "name": "fact_stock_timeseries",
+      "domain": "stocks_ts",
+      "columns": [
+        {"name": "stocks_ts_sk", "type": "string", "pk": true},
+        {"name": "company_sk", "type": "string", "fk": true},
+        {"name": "exchange_sk", "type": "string", "fk": true},
+        {"name": "currency_sk", "type": "string", "fk": true},
+        {"name": "date_sk", "type": "string", "fk": true},
+        {"name": "market_cap_usd", "type": "int"},
+        {"name": "current_price_usd", "type": "float"},
+        {"name": "volume_usd", "type": "float"}
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "dim_currency.currency_sk",
+      "to": "dim_exchange.currency_sk",
+      "cardinality": "one_to_many",
+      "label": "currency_sk"
+    },
+    {
+      "from": "dim_gics.gics_sk",
+      "to": "dim_company.gics_sk",
+      "cardinality": "one_to_many",
+      "label": "gics_sk"
+    },
+    {
+      "from": "dim_company.company_sk",
+      "to": "fact_income_statement.company_sk",
+      "cardinality": "one_to_many",
+      "label": "company_sk"
+    },
+    {
+      "from": "dim_exchange.exchange_sk",
+      "to": "fact_income_statement.exchange_sk",
+      "cardinality": "one_to_many",
+      "label": "exchange_sk"
+    },
+    {
+      "from": "dim_currency.currency_sk",
+      "to": "fact_income_statement.currency_sk",
+      "cardinality": "one_to_many",
+      "label": "currency_sk"
+    },
+    {
+      "from": "dim_time.date_sk",
+      "to": "fact_income_statement.date_sk",
+      "cardinality": "one_to_many",
+      "label": "date_sk"
+    },
+    {
+      "from": "dim_company.company_sk",
+      "to": "fact_stock_timeseries.company_sk",
+      "cardinality": "one_to_many",
+      "label": "company_sk"
+    },
+    {
+      "from": "dim_exchange.exchange_sk",
+      "to": "fact_stock_timeseries.exchange_sk",
+      "cardinality": "one_to_many",
+      "label": "exchange_sk"
+    },
+    {
+      "from": "dim_currency.currency_sk",
+      "to": "fact_stock_timeseries.currency_sk",
+      "cardinality": "one_to_many",
+      "label": "currency_sk"
+    },
+    {
+      "from": "dim_time.date_sk",
+      "to": "fact_stock_timeseries.date_sk",
+      "cardinality": "one_to_many",
+      "label": "date_sk"
+    }
+  ]
+}

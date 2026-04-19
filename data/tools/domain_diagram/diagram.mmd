@@ -1,0 +1,61 @@
+erDiagram
+    DIM_TIME {
+        string date_sk PK
+        date date
+        int year
+        int month
+    }
+    DIM_CURRENCY {
+        string currency_sk PK
+        string currency
+        string currency_name
+    }
+    DIM_EXCHANGE {
+        string exchange_sk PK
+        string market_identifier_code
+        string exchange_name
+        string currency_sk FK
+    }
+    DIM_GICS {
+        string gics_sk PK
+        int sector_code
+        int industry_group_code
+        int industry_code
+        int sub_industry_code
+    }
+    DIM_COMPANY {
+        string company_sk PK
+        string company_name
+        string yf_symbol
+        string gics_sk FK
+    }
+    FACT_INCOME_STATEMENT {
+        string income_statement_sk PK
+        string company_sk FK
+        string exchange_sk FK
+        string currency_sk FK
+        string date_sk FK
+        string period
+        float total_revenue_usd
+        float profit_margin
+    }
+    FACT_STOCK_TIMESERIES {
+        string stocks_ts_sk PK
+        string company_sk FK
+        string exchange_sk FK
+        string currency_sk FK
+        string date_sk FK
+        int market_cap_usd
+        float current_price_usd
+        float volume_usd
+    }
+    DIM_CURRENCY ||--o{ DIM_EXCHANGE : currency_sk
+    DIM_GICS ||--o{ DIM_COMPANY : gics_sk
+    DIM_COMPANY ||--o{ FACT_INCOME_STATEMENT : company_sk
+    DIM_EXCHANGE ||--o{ FACT_INCOME_STATEMENT : exchange_sk
+    DIM_CURRENCY ||--o{ FACT_INCOME_STATEMENT : currency_sk
+    DIM_TIME ||--o{ FACT_INCOME_STATEMENT : date_sk
+    DIM_COMPANY ||--o{ FACT_STOCK_TIMESERIES : company_sk
+    DIM_EXCHANGE ||--o{ FACT_STOCK_TIMESERIES : exchange_sk
+    DIM_CURRENCY ||--o{ FACT_STOCK_TIMESERIES : currency_sk
+    DIM_TIME ||--o{ FACT_STOCK_TIMESERIES : date_sk

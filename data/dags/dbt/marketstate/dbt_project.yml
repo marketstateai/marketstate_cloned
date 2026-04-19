@@ -1,0 +1,21 @@
+name: 'marketstate'
+version: '1.0.0'
+
+profile: 'marketstate'
+model-paths: ["models", "seeds"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+seeds:
+  marketstate:
+    +quote_columns: false
+    currency_mapping:
+      +column_types:
+        currency: string
+        currency_name: string

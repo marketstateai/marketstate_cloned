@@ -1,0 +1,46 @@
+models:
+- name: exchanges
+  config:
+    schema: stg_prod
+  description: Latest exchange rate per currency and date, with currency names.
+sources:
+- name: raw
+  description: Raw source tables in BigQuery.
+  database: general-428410
+  schema: src_prod
+  tables:
+  - name: exchanges
+    description: |-
+      Exchange metadata including market identifier and trading currency.
+      {{ doc('exchanges') }}
+    columns:
+    - name: exchange_name
+      description: Exchange name.
+      data_type: STRING
+    - name: country
+      description: Country of the exchange.
+      data_type: STRING
+    - name: market_identifier_code
+      description: Market identifier code.
+      data_type: STRING
+    - name: currency
+      description: Trading currency code.
+      data_type: STRING
+    - name: stock_count
+      description: Number of listed stocks.
+      data_type: INTEGER
+    - name: url
+      description: Exchange website URL.
+      data_type: STRING
+    - name: capture_date
+      description: Capture date for the exchange snapshot.
+      data_type: STRING
+    - name: exchange_abbreviation
+      description: Exchange abbreviation.
+      data_type: STRING
+    - name: exchange_name_local_language
+      description: Exchange name in local language.
+      data_type: STRING
+    - name: trade_accessibility
+      description: Trade accessibility classification.
+      data_type: STRING

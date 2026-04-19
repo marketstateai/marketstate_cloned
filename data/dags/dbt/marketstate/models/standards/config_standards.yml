@@ -1,0 +1,77 @@
+models:
+- name: stg_gics
+  config:
+    schema: stg_prod
+  description: GICS hierarchy with sector, industry group, industry, and sub-industry details.
+  columns:
+  - name: gics_sk
+    description: Surrogate key derived from sector, industry group, industry, and sub-industry codes.
+    data_type: STRING
+    tests:
+    - unique
+    - not_null
+  - name: sector_code
+    description: GICS sector code.
+    data_type: INT64
+  - name: sector
+    description: GICS sector name.
+    data_type: STRING
+  - name: industry_group_code
+    description: GICS industry group code.
+    data_type: INT64
+  - name: industry_group
+    description: GICS industry group name.
+    data_type: STRING
+  - name: industry_code
+    description: GICS industry code.
+    data_type: INT64
+  - name: industry
+    description: GICS industry name.
+    data_type: STRING
+  - name: sub_industry_code
+    description: GICS sub-industry code.
+    data_type: INT64
+  - name: sub_industry
+    description: GICS sub-industry name.
+    data_type: STRING
+  - name: description
+    description: GICS sub-industry description.
+    data_type: STRING
+sources:
+- name: raw
+  description: Raw source tables in BigQuery.
+  database: general-428410
+  schema: src_prod
+  tables:
+  - name: gics
+    description: |-
+      GICS
+      {{ doc('gics') }}
+    columns:
+    - name: sector_code
+      description: GICS sector code.
+      data_type: INTEGER
+    - name: sector
+      description: GICS sector name.
+      data_type: STRING
+    - name: industry_group_code
+      description: GICS industry group code.
+      data_type: INTEGER
+    - name: industry_group
+      description: GICS industry group name.
+      data_type: STRING
+    - name: industry_code
+      description: GICS industry code.
+      data_type: INTEGER
+    - name: industry
+      description: GICS industry name.
+      data_type: STRING
+    - name: sub_industry_code
+      description: GICS sub-industry code.
+      data_type: INTEGER
+    - name: sub_industry
+      description: GICS sub-industry name.
+      data_type: STRING
+    - name: description
+      description: GICS sub-industry description.
+      data_type: STRING

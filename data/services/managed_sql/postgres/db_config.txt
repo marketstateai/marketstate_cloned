@@ -1,0 +1,35 @@
+gcloud sql instances create marketstate \
+    --database-version=POSTGRES_16 \
+    --edition=ENTERPRISE \
+    --tier=db-f1-micro \
+    --region=us-central1 \
+    --storage-size=12GB \
+    --storage-type=SSD \
+    --activation-policy=ALWAYS \
+    --availability-type=ZONAL \
+    --no-backup
+
+-- After instantiation, need to auth my IP
+gcloud sql instances patch "$POSTGRES_INSTANCE" \
+    --authorized-networks=$(curl -s ifconfig.me)/32
+
+
+-- connect with public IP via VScode extention (good for DDL and DML)
+    IP
+    port
+    user
+    password
+    instance name
+
+-- Automate via python with credentials
+    conn = psycopg2.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+    )
+
+-- connect via gcloud (not recommended)
+    gcloud sql connect martketstate --user=postgres
+    You need psql client or else ERROR: (gcloud.sql.connect) Psql client not found.  Please install a psql client and make sure it is in PATH to be able to connect to the database instance.

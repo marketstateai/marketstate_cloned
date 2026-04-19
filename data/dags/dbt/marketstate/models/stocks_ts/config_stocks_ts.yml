@@ -1,0 +1,417 @@
+models:
+- name: stg_stocks_ts_cleansed
+  config:
+    schema: stg_prod
+  description: Stock timeseries data cleansed with type casts, primary key checks,
+    and deduplication.
+  columns:
+  - name: stocks_ts_sk
+    description: Primary key derived from exchange_symbol and capture_date.
+    data_type: STRING
+    tests:
+    - unique
+    - not_null
+  - name: exchange_symbol
+    description: Exchange-specific symbol identifier from the raw timeseries feed.
+    data_type: STRING
+    tests:
+    - not_null
+  - name: yf_symbol
+    description: Yahoo Finance symbol identifier from the raw timeseries feed.
+    data_type: STRING
+  - name: capture_date
+    description: Capture date from the raw timeseries feed.
+    data_type: DATE
+    tests:
+    - not_null
+  - name: market_cap
+    description: Market capitalization from the raw timeseries feed.
+    data_type: INT64
+  - name: current_price
+    description: Current price from the raw timeseries feed.
+    data_type: INT64
+  - name: volume
+    description: Volume from the raw timeseries feed.
+    data_type: INT64
+
+- name: int_stocks_ts_usd
+  config:
+    schema: int_prod
+  description: Stock timeseries data, narrowed down to most recent day and converted
+    to USD
+  columns:
+  - name: stocks_ts_sk
+    description: Surrogate key derived from exchange_symbol, yf_symbol, and date.
+    data_type: STRING
+    tests:
+    - unique
+    - not_null
+  - name: exchange_symbol
+    description: Exchange-specific symbol identifier from the raw timeseries feed.
+    data_type: STRING
+
+sources:
+- name: raw
+  description: ''
+  database: general-428410
+  schema: src_prod
+  tables:
+  - name: yf_stocks_ts
+    description: "Yahoo Finance stock metadata snapshots. {{ doc('yf_stocks_ts') }}\n"
+    columns:
+    - name: exchangeSymbol
+      description: The primary key, which combines the presumed primary exchange with
+        the stock symbol.
+      data_type: STRING
+    - name: yfSymbol
+      description: 'The unique ticker yfSymbol representing the stock on the exchange.
+        Example: ''AAPL'' for Apple Inc.'
+      data_type: STRING
+    - name: captureDate
+      description: The date on which the stock information was captured from the data
+        source, typically formatted as YYYY-MM-DD. Useful for tracking the timeliness
+        of data.
+      data_type: DATE
+    - name: marketCap
+      description: 'The market capitalization of the company, calculated as the total
+        market value of all outstanding shares (shares outstanding multiplied by current
+        price). This metric gives an overall value of the company as perceived by
+        the market. Example: Comparing companies within the same industry.'
+      data_type: STRING
+    - name: currentPrice
+      description: 'The current trading price of the stock during the last recorded
+        trading session. This value can fluctuate throughout the trading day. Example:
+        Used for making buy or sell decisions during trading hours.'
+      data_type: STRING
+    - name: open
+      description: 'The stock''s opening price at the start of the trading day, representing
+        the first trade price after the market opens. Example: Useful for identifying
+        overnight market sentiment.'
+      data_type: STRING
+    - name: beta
+      description: 'The beta value, representing the stock''s volatility relative
+        to the overall market. A beta greater than 1 indicates higher volatility than
+        the market, while a beta less than 1 indicates lower volatility. Example:
+        Assessing risk and potential return of a stock.'
+      data_type: STRING
+    - name: forwardPE
+      description: 'The forward price-to-earnings ratio, calculated by dividing the
+        current share price by the estimated future earnings per share (EPS). It provides
+        an insight into how much investors are willing to pay today for a dollar of
+        expected future earnings. Example: Comparing the valuation of companies with
+        similar growth rates.'
+      data_type: STRING
+    - name: volume
+      description: 'The total number of shares traded during the last recorded trading
+        session. High trading volume often indicates strong interest in the stock,
+        either due to news or investor activity. Example: Confirming the strength
+        of a price movement.'
+      data_type: STRING
+    - name: auditRisk
+      description: 'The risk level associated with the company’s audit, often related
+        to the accuracy and reliability of financial statements. Example: Used to
+        evaluate potential financial misstatements.'
+      data_type: STRING
+    - name: boardRisk
+      description: 'The risk level associated with the company’s board of directors,
+        which may include governance issues. Example: Assessing governance quality
+        and oversight.'
+      data_type: STRING
+    - name: compensationRisk
+      description: 'The risk level associated with the company''s compensation practices,
+        which could impact employee motivation and retention. Example: Evaluating
+        alignment of management incentives with shareholder interests.'
+      data_type: STRING
+    - name: shareHolderRightsRisk
+      description: 'The risk level associated with shareholder rights, such as voting
+        power and influence over management decisions. Example: Assessing the protection
+        of minority shareholder interests.'
+      data_type: STRING
+    - name: overallRisk
+      description: 'The overall risk level of the company, typically combining various
+        risk factors such as financial, operational, and governance risks. Example:
+        Providing a summary risk profile for investors.'
+      data_type: STRING
+    - name: governanceEpochDate
+      description: 'The date of the most recent governance data update. Example: Ensuring
+        the use of the most current governance information for analysis.'
+      data_type: STRING
+    - name: compensationAsOfEpochDate
+      description: 'The date of the most recent compensation data update. Example:
+        Reviewing the latest executive compensation details.'
+      data_type: STRING
+    - name: maxAge
+      description: 'The maximum age of the data in the dataset, indicating the oldest
+        data point. Example: Ensuring data relevance in time-sensitive analysis.'
+      data_type: STRING
+    - name: previousClose
+      description: 'The stock''s closing price from the previous trading day. Example:
+        Used as a reference point for comparing today''s trading activity.'
+      data_type: STRING
+    - name: dayLow
+      description: 'The lowest price at which the stock traded during the current
+        trading day. Example: Identifying potential entry points for buyers.'
+      data_type: STRING
+    - name: dayHigh
+      description: 'The highest price at which the stock traded during the current
+        trading day. Example: Identifying potential resistance levels in the stock''s
+        price.'
+      data_type: STRING
+    - name: regularMarketPreviousClose
+      description: 'The closing price of the stock in the regular market (excluding
+        after-hours trading) from the previous day. Example: Comparing regular trading
+        hours with after-hours or pre-market activity.'
+      data_type: STRING
+    - name: regularMarketOpen
+      description: 'The opening price of the stock in the regular market session.
+        Example: Used to gauge investor sentiment at the start of regular trading
+        hours.'
+      data_type: STRING
+    - name: regularMarketDayLow
+      description: 'The lowest price of the day in the regular market. Example: Identifying
+        intraday support levels for the stock.'
+      data_type: STRING
+    - name: regularMarketDayHigh
+      description: 'The highest price of the day in the regular market. Example: Identifying
+        intraday resistance levels for the stock.'
+      data_type: STRING
+    - name: regularMarketVolume
+      description: 'The total volume of shares traded in the regular market session.
+        Example: Analyzing market participation during regular hours.'
+      data_type: STRING
+    - name: averageVolume
+      description: 'The average trading volume of the stock over a specified period,
+        usually 50 or 200 days. Example: Used to identify trends in trading activity
+        over time.'
+      data_type: STRING
+    - name: averageVolume10days
+      description: 'The average volume of shares traded over the last 10 days. Example:
+        Identifying short-term changes in trading behavior.'
+      data_type: STRING
+    - name: averageDailyVolume10Day
+      description: 'The average daily trading volume over the last 10 days. Example:
+        Used to assess the liquidity of the stock in the short term.'
+      data_type: STRING
+    - name: bid
+      description: 'The current highest price that a buyer is willing to pay for the
+        stock. Example: Indicates the demand side of the market for the stock.'
+      data_type: STRING
+    - name: ask
+      description: 'The current lowest price that a seller is willing to accept for
+        the stock. Example: Indicates the supply side of the market for the stock.'
+      data_type: STRING
+    - name: bidSize
+      description: 'The number of shares being bid at the current bid price. Example:
+        Used to gauge the strength of demand at the bid price.'
+      data_type: STRING
+    - name: askSize
+      description: 'The number of shares being offered at the current ask price. Example:
+        Used to gauge the strength of supply at the ask price.'
+      data_type: STRING
+    - name: fiftyTwoWeekLow
+      description: 'The lowest price at which the stock has traded in the past 52
+        weeks. Example: Identifying long-term support levels.'
+      data_type: STRING
+    - name: fiftyTwoWeekHigh
+      description: 'The highest price at which the stock has traded in the past 52
+        weeks. Example: Identifying long-term resistance levels.'
+      data_type: STRING
+    - name: fiftyDayAverage
+      description: 'The average price of the stock over the last 50 trading days.
+        Example: A common technical indicator used to identify trends.'
+      data_type: STRING
+    - name: twoHundredDayAverage
+      description: 'The average price of the stock over the last 200 trading days.
+        Example: Used to identify longer-term trends and potential entry or exit points.'
+      data_type: STRING
+    - name: enterpriseValue
+      description: 'The total value of the company, including its market capitalization
+        plus any debt, minus cash. Example: Used in valuation ratios like EV/EBITDA
+        to assess the company''s worth.'
+      data_type: STRING
+    - name: floatShares
+      description: 'The number of shares available for public trading, excluding closely
+        held shares. Example: Helps determine the stock''s liquidity.'
+      data_type: STRING
+    - name: sharesOutstanding
+      description: 'The total number of shares that have been issued by the company
+        and are held by shareholders. Example: Used to calculate market capitalization.'
+      data_type: STRING
+    - name: sharesShort
+      description: 'The number of shares that are currently being shorted by investors.
+        Example: Indicates bearish sentiment or potential short squeeze opportunities.'
+      data_type: STRING
+    - name: sharesShortPriorMonth
+      description: 'The number of shares that were shorted in the prior month. Example:
+        Used to compare changes in short interest over time.'
+      data_type: STRING
+    - name: sharesShortPreviousMonthDate
+      description: 'The date of the short interest data from the previous month. Example:
+        Tracking short interest trends month-over-month.'
+      data_type: STRING
+    - name: dateShortInterest
+      description: 'The date when the current short interest data was recorded. Example:
+        Ensuring the timeliness of short interest information.'
+      data_type: STRING
+    - name: sharesPercentSharesOut
+      description: 'The percentage of the total shares outstanding that are currently
+        shorted. Example: Identifying the proportion of shares being bet against.'
+      data_type: STRING
+    - name: heldPercentInsiders
+      description: 'The percentage of shares held by company insiders, such as executives
+        and directors. Example: High insider ownership may indicate confidence in
+        the company’s prospects.'
+      data_type: STRING
+    - name: heldPercentInstitutions
+      description: 'The percentage of shares held by institutional investors like
+        mutual funds, pensions, and insurance companies. Example: High institutional
+        ownership can indicate confidence from professional investors.'
+      data_type: STRING
+    - name: shortRatio
+      description: 'The ratio of short interest to the average daily trading volume,
+        also known as ''days to cover''. Example: Higher ratios may indicate the potential
+        for a short squeeze.'
+      data_type: STRING
+    - name: shortPercentOfFloat
+      description: 'The percentage of the public float that is currently shorted.
+        Example: Assessing the level of bearish sentiment among traders.'
+      data_type: STRING
+    - name: impliedSharesOutstanding
+      description: 'The estimated total number of shares that would be outstanding
+        if all convertible securities were exercised. Example: Used to assess potential
+        dilution impact.'
+      data_type: STRING
+    - name: bookValue
+      description: 'The net asset value of the company, calculated as total assets
+        minus total liabilities. Example: Used to assess the company''s intrinsic
+        value relative to its market value.'
+      data_type: STRING
+    - name: priceToBook
+      description: 'The ratio of the stock''s market price to its book value per share.
+        Example: A lower ratio may indicate that the stock is undervalued.'
+      data_type: STRING
+    - name: netIncomeToCommon
+      description: 'The net income attributable to common shareholders after dividends
+        on preferred stock have been paid. Example: Used in calculating earnings per
+        share (EPS).'
+      data_type: STRING
+    - name: trailingEps
+      description: 'The earnings per share over the trailing 12 months, calculated
+        by dividing net income by the number of outstanding shares. Example: A key
+        metric for assessing a company''s profitability.'
+      data_type: STRING
+    - name: forwardEps
+      description: 'The projected earnings per share over the next 12 months. Example:
+        Used to estimate the company''s future profitability and valuation.'
+      data_type: STRING
+    - name: pegRatio
+      description: 'The price/earnings to growth ratio, calculated by dividing the
+        P/E ratio by the projected earnings growth rate. Example: A PEG ratio below
+        1 may indicate that a stock is undervalued relative to its growth potential.'
+      data_type: STRING
+    - name: enterpriseToEbitda
+      description: 'The ratio of enterprise value (EV) to earnings before interest,
+        taxes, depreciation, and amortization (EBITDA). Example: Used as a valuation
+        metric to compare companies with different capital structures.'
+      data_type: STRING
+    - name: 52WeekChange
+      description: 'The percentage change in the stock''s price over the last 52 weeks.
+        Example: Indicates the stock''s performance over a significant period.'
+      data_type: STRING
+    - name: SandP52WeekChange
+      description: 'The percentage change in the S&P 500 index over the last 52 weeks.
+        Example: Used as a benchmark to compare the stock''s performance against the
+        broader market.'
+      data_type: STRING
+    - name: targetHighPrice
+      description: 'The highest price target set by analysts for the stock. Example:
+        Indicates the most optimistic view of the stock''s future price.'
+      data_type: STRING
+    - name: targetLowPrice
+      description: 'The lowest price target set by analysts for the stock. Example:
+        Indicates the most conservative view of the stock''s future price.'
+      data_type: STRING
+    - name: targetMeanPrice
+      description: 'The average of all analysts'' price targets for the stock. Example:
+        Provides a consensus view of the stock''s future price potential.'
+      data_type: STRING
+    - name: targetMedianPrice
+      description: 'The median of all analysts'' price targets for the stock. Example:
+        Reduces the impact of outliers in the price target estimates.'
+      data_type: STRING
+    - name: recommendationMean
+      description: 'The average of analysts'' recommendations, typically on a scale
+        of 1 (strong buy) to 5 (strong sell). Example: Provides a consensus rating
+        on the stock.'
+      data_type: STRING
+    - name: recommendationKey
+      description: 'The key or summary of the analyst recommendation, such as ''Buy'',
+        ''Hold'', or ''Sell''. Example: Used as a quick reference for the overall
+        analyst sentiment.'
+      data_type: STRING
+    - name: numberOfAnalystOpinions
+      description: 'The total number of analysts who have issued opinions or ratings
+        on the stock. Example: A higher number indicates broader analyst coverage
+        and potentially more reliable consensus.'
+      data_type: STRING
+    - name: totalCash
+      description: 'The total amount of cash and cash equivalents held by the company.
+        Example: Indicates the company''s liquidity and financial health.'
+      data_type: STRING
+    - name: totalCashPerShare
+      description: 'The total cash held by the company divided by the number of shares
+        outstanding. Example: Used to assess the cash position on a per-share basis.'
+      data_type: STRING
+    - name: ebitda
+      description: 'Earnings before interest, taxes, depreciation, and amortization,
+        representing a company''s operational profitability. Example: Used to compare
+        profitability between companies without the effects of financing and accounting
+        decisions.'
+      data_type: STRING
+    - name: totalDebt
+      description: 'The total amount of debt held by the company, including both short-term
+        and long-term obligations. Example: Used to assess the company''s leverage
+        and financial risk.'
+      data_type: STRING
+    - name: quickRatio
+      description: 'A measure of a company''s short-term liquidity, calculated by
+        dividing liquid assets by current liabilities. Example: A quick ratio greater
+        than 1 indicates that the company can meet its short-term obligations without
+        selling inventory.'
+      data_type: STRING
+    - name: currentRatio
+      description: 'A measure of a company''s ability to pay short-term obligations,
+        calculated by dividing current assets by current liabilities. Example: A current
+        ratio above 1 indicates sufficient assets to cover liabilities.'
+      data_type: STRING
+    - name: debtToEquity
+      description: 'The ratio of a company''s total debt to its shareholders'' equity,
+        indicating the relative proportion of debt and equity used to finance the
+        company''s assets. Example: Used to assess financial leverage and risk.'
+      data_type: STRING
+    - name: returnOnAssets
+      description: 'A measure of how efficiently a company uses its assets to generate
+        profit, calculated by dividing net income by total assets. Example: Higher
+        return on assets indicates more efficient use of company assets.'
+      data_type: STRING
+    - name: returnOnEquity
+      description: 'A measure of profitability relative to shareholder equity, calculated
+        by dividing net income by shareholders'' equity. Example: Indicates how well
+        the company is generating profit from its equity base.'
+      data_type: STRING
+    - name: freeCashflow
+      description: 'The amount of cash generated by the company''s operations after
+        deducting capital expenditures, available for distribution to shareholders
+        or for reinvestment. Example: Indicates the company''s ability to generate
+        cash and fund growth or dividends.'
+      data_type: STRING
+    - name: operatingCashflow
+      description: 'The cash generated from the company''s core business operations,
+        excluding capital expenditures. Example: A key indicator of a company''s operational
+        efficiency and financial health.'
+      data_type: STRING
+    - name: trailingPegRatio
+      description: 'The price/earnings to growth ratio based on trailing earnings,
+        adjusted for the company''s historical growth rate. Example: Used to assess
+        whether a stock is undervalued or overvalued relative to its historical growth.'
+      data_type: STRING

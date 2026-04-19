@@ -1,0 +1,4 @@
+models:
+- name: industry_performance
+  config:
+    schema: mrt_prod

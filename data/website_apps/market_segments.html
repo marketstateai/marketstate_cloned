@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>eVTOL Drilldown + Forecast + Financials</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300;400;700&display=swap" rel="stylesheet" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      background: #141414;
+      font-family: 'Kumbh Sans', sans-serif;
+      color: #B8CBE2;
+      margin: 0;
+      padding: 2vw;
+    }
+
+    .drilldown-container {
+      max-width: 1600px;
+      width: 95%;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 32px 0 16px;
+      border-left: 4px solid #B8CBE2;
+      padding-left: 12px;
+    }
+
+    .box-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #FFD580;
+    }
+
+    .cell-key {
+      color: #B8CBE2;
+      font-size: 13px;
+      opacity: 0.7;
+      margin-right: 4px;
+    }
+
+    .level {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: #1F1F21;
+      border-left: 6px solid #FFD580;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 15px;
+      font-weight: 500;
+      flex: 1 0 180px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+      box-sizing: border-box;
+      max-width: 100%;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 1px #B8CBE2, 0 0 12px #B8CBE280;
+    }
+
+    /* Make specific analytics cards non-interactive on hover */
+    #marketcap-container.card,
+    #forecast-container.card {
+      cursor: default;
+    }
+    #marketcap-container.card:hover,
+    #forecast-container.card:hover {
+      transform: none;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    .market-size {
+      font-size: 13px;
+      opacity: 0.85;
+      margin-top: 8px;
+    }
+
+    /* Ensure hidden always wins */
+    .hidden { display: none !important; }
+
+    #technology-level .card { border-left-color: #8BE0F3; }
+    #company-level .card    { border-left-color: #B8E2B8; }
+    /* Product tiles now use yellow to match the requested palette */
+    #product-level .card    { border-left-color: #FFD580; }
+
+    .label { fill: #B8CBE2; font-size: 13px; text-anchor: middle; }
+    .fill-2025 { fill: none; stroke: #B8E2B8; stroke-width: 1.5; }
+    .fill-2030 { fill: #E2B8B8; fill-opacity: 0.18; stroke: #E2B8B8; stroke-width: 1.5; }
+
+    .uncertainty-2025 { fill: #B8E2B8; opacity: 0.12; }
+    .uncertainty-2030 { fill: #E2B8B8; opacity: 0.12; }
+
+    .mean-line { stroke-width: 2.25; stroke-dasharray: 4 2; }
+    .line-2025 { stroke: #B8E2B8; }
+    .line-2030 { stroke: #E2B8B8; }
+
+    #forecast-container, #pe-ratio-container {
+      margin-top: 40px;
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 24px;
+      position: relative;
+    }
+
+    #forecast-chart { width: 100%; height: auto; }
+
+    .cagr-box {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      font-size: 13px;
+      color: #FFD580;
+      font-weight: 500;
+      background: rgba(30,30,30,0.8);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-family: 'Kumbh Sans', sans-serif;
+    }
+
+    .small-note {
+      font-size: 12px;
+      color: #B8CBE2;
+      opacity: 0.85;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .swatch {
+      display: inline-block;
+      width: 12px; height: 12px; border-radius: 3px;
+      border: 1px solid #333;
+    }
+
+    #tech-info-row.hidden { display: none; }
+
+    #tech-info-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    #marketcap-container {
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      min-height: 420px;
+    }
+
+    #marketcap-pie-chart {
+      display: block;
+      overflow: visible;
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    #marketcap-container,
+    #forecast-container,
+    #pe-ratio-container {
+      border-left: 6px solid #8BE0F3;
+    }
+
+    #pe-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    #pe-scroll::-webkit-scrollbar { height: 10px; }
+    #pe-scroll::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 8px; }
+    #pe-scroll::-webkit-scrollbar-track { background: #222; }
+    #pe-ratio-chart { display: block; }
+
+    /* search bar row for technologies & companies */
+    #tech-search-row,
+    #company-search-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 8px 0 16px;
+      flex-wrap: wrap;
+    }
+    #tech-search-input,
+    #company-search-input {
+      background: #1F1F21;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: #B8CBE2;
+      font-family: 'Kumbh Sans', sans-serif;
+      min-width: 260px;
+      outline: none;
+    }
+    #tech-search-input::placeholder,
+    #company-search-input::placeholder { color: #8a9bb2; opacity: 0.9; }
+
+    /* Clear buttons */
+    #tech-clear-btn,
+    #company-clear-btn {
+      background: #262628;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 8px 10px;
+      color: #B8CBE2;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    #tech-clear-btn:hover,
+    #company-clear-btn:hover { border-color: #444; }
+
+    #top6-hint,
+    #top3-hint {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    /* sources inside description */
+    .desc-sources {
+      margin-top: 14px;
+      background: #1A1A1C;
+      border: 1px solid #2a2a2d;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .desc-sources-toggle {
+      color: #FFD580;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+    .desc-sources-list {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      line-height: 1.6;
+      display: none;
+    }
+    .desc-sources-list a {
+      color: #8BE0F3;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    /* small section headers inside cards */
+    .insight-subtitle {
+      color: #FFD580;
+      font-weight: 600;
+      margin: 12px 0 6px;
+      font-size: 0.95rem;
+    }
+
+    /* Toggle buttons for Risks / Opportunities */
+    .toggle-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .toggle-btn {
+      background: #262628;
+      border: 1px solid #333;
+      color: #B8CBE2;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .toggle-btn:hover { border-color: #444; }
+    .toggle-content {
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      background: #1A1A1C;
+      border: 1px solid #2a2a2d;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    /* Performance graph styles */
+    .perf-chart { width: 100%; height: 120px; display: block; }
+    .perf-zero-line { stroke: #444; stroke-width: 1; shape-rendering: crispEdges; }
+  </style>
+</head>
+<body>
+  <div class="drilldown-container">
+    <div class="section-label" id="tech-label">Market Researcher</div>
+
+    <!-- Searchable dropdown for all technologies -->
+    <div id="tech-search-row">
+      <input id="tech-search-input" list="tech-list" placeholder="Search more technologies…" />
+      <datalist id="tech-list"></datalist>
+      <button id="tech-clear-btn" type="button" title="Clear search">Clear</button>
+      <span id="top6-hint">Showing top 6 by aggregate market cap. Use search to jump to others.</span>
+    </div>
+
+    <div id="technology-level" class="level"></div>
+
+    <!-- Combined info row: description (full width), pie + forecast (50/50), related companies (full width) -->
+    <div id="tech-info-row" class="hidden">
+      <!-- Description (full width) -->
+      <div id="tech-description" style="
+        flex: 1 1 100%;
+        font-size: 14px;
+        line-height: 1.6;
+        background: #1F1F21;
+        padding: 16px;
+        border-left: 6px solid #8BE0F3;
+        border-radius: 10px;
+      "></div>
+
+      <!-- Pie (50%) -->
+      <div id="marketcap-container" class="hidden card" style="flex: 1 1 48%; min-width: 320px; cursor: default;">
+        <div class="box-title">Public Companies Market Cap</div>
+        <p>Share of total market cap by company</p>
+        <svg id="marketcap-pie-chart"></svg>
+      </div>
+
+      <!-- Forecast (50%) -->
+      <div id="forecast-container" class="hidden card" style="flex: 1 1 48%; min-width: 320px; margin-top: 0; cursor: default;">
+        <div class="box-title">Forecast Market Size (2025 &amp; 2030)</div>
+        <div id="forecast-row" style="display:flex; justify-content:center; gap:24px;">
+          <svg id="forecast-chart" style="flex: 1; min-width: 300px;"></svg>
+        </div>
+        <!-- IQR reference -->
+        <div id="forecast-iqr-note" class="small-note hidden"></div>
+      </div>
+
+      <!-- Related companies (full width) -->
+      <div id="private-companies-container" class="hidden" style="
+        flex: 1 1 100%;
+        background: #1F1F21;
+        padding: 16px;
+        border-left: 6px solid #8BE0F3;
+        border-radius: 10px;
+        font-size: 14px;
+        line-height: 1.5;
+      "></div>
+    </div>
+
+    <div id="pe-ratio-container" class="hidden">
+      <div class="box-title">Valuation Ratios</div>
+      <p>Compare ratios between competing companies</p>
+      <div id="pe-scroll">
+        <svg id="pe-ratio-chart"></svg>
+      </div>
+    </div>
+
+    <!-- Companies -->
+    <div class="section-label hidden" id="company-label">Companies</div>
+    <div id="company-search-row" class="hidden">
+      <input id="company-search-input" list="company-list" placeholder="Search more companies…" />
+      <datalist id="company-list"></datalist>
+      <button id="company-clear-btn" type="button" title="Clear search">Clear</button>
+      <span id="top3-hint">Showing top 3 by market cap. Use search to jump to others.</span>
+    </div>
+    <div id="company-level" class="level hidden"></div>
+
+    <!-- Under Companies: single full-width insights card, then products and financials -->
+    <div id="insights-container" class="level hidden"></div>
+    <div id="product-level" class="level hidden"></div>
+    <div id="financials-container" class="level hidden"></div>
+  </div>
+
+  <script>
+    const apiURL = "https://marketstate-api-318171260121.us-central1.run.app/query?query=";
+    const query = `SELECT * FROM prod_mart.market_segments LIMIT 3000`;
+    let rawData = [];
+    let allSegments = []; // [{segment, rows, size}...]
+    let currentCompanies = []; // cache for company search in current segment
+
+    const $ = id => document.getElementById(id);
+
+    const fmtSize = val => {
+      const num = parseFloat(val);
+      return isNaN(num) ? "-" : `$${(num / 1e9).toFixed(2)}B`;
+    };
+
+    const fmtDateTime = (v) => {
+      if (!v) return "-";
+      const d = new Date(v);
+      if (isNaN(d.getTime())) return String(v);
+      return d.toLocaleString(undefined, {
+        year: 'numeric', month: 'short', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+      });
+    };
+
+    const toNum = v => {
+      if (v == null) return NaN;
+      return +String(v).replace(/[$,\s]/g, "");
+    };
+
+    const groupBy = (arr, key) => arr.reduce((acc, obj) => {
+      const val = obj[key];
+      if (!val) return acc;
+      (acc[val] = acc[val] || []).push(obj);
+      return acc;
+    }, {});
+
+    const makeCard = (label, onclick, marketSize, privateListHTML) => {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <div>${label}</div>
+        ${marketSize ? `<div class="market-size">${fmtSize(marketSize)}</div>` : ""}
+        ${privateListHTML || ""}
+      `;
+      div.onclick = onclick;
+      return div;
+    };
+
+    // --- Source normalization for deduping ---
+    function normalizeSource(s) {
+      if (!s) return "";
+      const raw = s.trim();
+      if (/^https?:\/\//i.test(raw)) {
+        try {
+          const u = new URL(raw);
+          u.hostname = u.hostname.toLowerCase();
+          const keep = [];
+          u.searchParams.forEach((v, k) => {
+            if (!/^utm_/i.test(k) && !/^fbclid$/i.test(k) && !/^ref$/i.test(k)) keep.push([k, v]);
+          });
+          u.search = "";
+          keep.forEach(([k, v]) => u.searchParams.append(k, v));
+          u.hash = "";
+          if (u.pathname.length > 1 && u.pathname.endsWith("/")) u.pathname = u.pathname.slice(0, -1);
+          return u.toString();
+        } catch(e) { /* fallthrough */ }
+      }
+      return raw.replace(/\s+/g, " ").toLowerCase();
+    }
+
+    // Build HTML for deduped sources; returns {html, count}
+    function buildSourcesHTML(rows) {
+      const items = rows
+        .map(r => r.sources || "")
+        .flatMap(s => s.split(",").map(x => x.trim()))
+        .filter(Boolean);
+
+      const uniqueMap = new Map(); // norm -> display
+      items.forEach(s => {
+        const norm = normalizeSource(s);
+        if (!norm) return;
+        if (!uniqueMap.has(norm)) {
+          const display = /^https?:\/\//i.test(s) ? normalizeSource(s) : s.trim();
+          uniqueMap.set(norm, display);
+        }
+      });
+      const uniques = Array.from(uniqueMap.values());
+      if (!uniques.length) return { html: "", count: 0 };
+
+      const list = uniques.map(s => {
+        const isURL = /^https?:\/\//i.test(s);
+        return isURL
+          ? `<li><a href="${s}" target="_blank" rel="noopener">${s}</a></li>`
+          : `<li>${s}</li>`;
+      }).join("");
+
+      const html = `
+        <div class="desc-sources">
+          <div class="desc-sources-toggle" id="desc-sources-toggle">Sources ▸ (${uniques.length})</div>
+          <ul class="desc-sources-list" id="desc-sources-list">${list}</ul>
+        </div>
+      `;
+      return { html, count: uniques.length };
+    }
+
+    async function fetchAndRender() {
+      const res = await fetch(apiURL + encodeURIComponent(query));
+      const json = await res.json();
+      rawData = (json && json.data) ? json.data : [];
+      renderTechnologies();
+      wireTechSearch();
+      hideCompaniesUI();   // hide companies on initial load
+      wireCompanySearch(); // set up listeners; UI remains hidden
+    }
+
+    function computeSegments(industry) {
+      const baseRows = industry
+        ? rawData.filter(r => r.industry === industry && r.market_segment)
+        : rawData.filter(r => r.market_segment);
+
+      const techMap = {};
+      baseRows.forEach(r => {
+        (r.market_segment || "")
+          .split(",").map(t => t.trim()).filter(Boolean)
+          .forEach(seg => ((techMap[seg] = techMap[seg] || []).push(r)));
+      });
+
+      const arr = Object.entries(techMap).map(([segment, rows]) => {
+        const capsByCo = new Map();
+        rows.forEach(r => {
+          const co  = r.company_name;
+          const cap = toNum(r.market_cap_usd);
+          if (!co || !isFinite(cap)) return;
+          capsByCo.set(co, Math.max(capsByCo.get(co) ?? 0, cap));
+        });
+        const size = Array.from(capsByCo.values()).reduce((a, b) => a + b, 0);
+        return { segment, rows, size };
+      });
+
+      allSegments = arr
+        .sort((a, b) => b.segment.localeCompare(a.segment))
+        .sort((a, b) => (b.size - a.size));
+    }
+
+    function renderTechnologies(industry) {
+      $("tech-label").classList.remove("hidden");
+      $("technology-level").classList.remove("hidden");
+      $("forecast-container").classList.add("hidden");
+      $("pe-ratio-container").classList.add("hidden");
+      $("technology-level").innerHTML = "";
+      $("product-level").innerHTML = "";
+      $("financials-container").classList.add("hidden");
+      $("tech-description").innerHTML = "";
+      $("tech-info-row").classList.add("hidden");
+
+      hideCompaniesUI();
+      computeSegments(industry);
+
+      const dl = $("tech-list");
+      if (dl) {
+        const opts = [...allSegments]
+          .sort((a, b) => a.segment.localeCompare(b.segment))
+          .map(s => `<option value="${s.segment}"></option>`).join("");
+        dl.innerHTML = opts;
+      }
+
+      const top6 = allSegments.slice(0, 6);
+      top6.forEach(({ segment, rows, size }) => {
+        $("technology-level").appendChild(
+          makeCard(
+            segment,
+            () => handleSegmentSelect(segment, rows),
+            size
+          )
+        );
+      });
+    }
+
+    function hideCompaniesUI() {
+      $("company-label")?.classList.add("hidden");
+      $("company-search-row")?.classList.add("hidden");
+      $("company-level")?.classList.add("hidden");
+      $("company-level").innerHTML = "";
+      const ci = $("company-search-input");
+      if (ci) ci.value = "";
+      const dl = $("company-list");
+      if (dl) dl.innerHTML = "";
+      currentCompanies = [];
+
+      // Hide inside-Companies blocks
+      $("insights-container")?.classList.add("hidden");
+      $("product-level")?.classList.add("hidden");
+      $("financials-container")?.classList.add("hidden");
+      $("insights-container").innerHTML = "";
+      $("product-level").innerHTML = "";
+      $("financials-container").innerHTML = "";
+    }
+
+    function handleSegmentSelect(segment, rowsMaybe) {
+      let rows = rowsMaybe;
+      if (!rows) {
+        const found = allSegments.find(s => s.segment === segment);
+        if (!found) return;
+        rows = found.rows;
+      }
+
+      renderCompanies(segment);
+
+      const infoRow = $("tech-info-row");
+      const descEl  = $("tech-description");
+      const mcEl    = $("marketcap-container");
+      const pcEl    = $("private-companies-container");
+
+      const bestDesc = rows
+        .map(r => (r.market_segment_description || "").trim())
+        .filter(Boolean)
+        .reduce((best, cur) => (cur.length > best.length ? cur : best), "");
+
+      const { html: sourcesHTML } = buildSourcesHTML(rows);
+
+      if (bestDesc) {
+        descEl.innerHTML = `
+          <div class="box-title">${segment}</div>
+          <div>${bestDesc}</div>
+          ${sourcesHTML || ""}
+        `;
+        infoRow.classList.remove("hidden");
+        mcEl.classList.remove("hidden");
+        renderMarketCapPieChart(rows);
+      } else {
+        descEl.innerHTML = sourcesHTML || "";
+        mcEl.classList.add("hidden");
+        if (sourcesHTML) infoRow.classList.remove("hidden");
+      }
+
+      const allPrivs = rows
+        .map(r => r.private_companies || "")
+        .flatMap(txt => txt.split(",").map(s => s.trim()))
+        .filter(Boolean);
+      const uniquePrivs = Array.from(new Set(allPrivs));
+      if (uniquePrivs.length) {
+        pcEl.innerHTML = `
+          <div class="box-title">Related Companies</div>
+          <div>${uniquePrivs.join(", ")}</div>
+        `;
+        pcEl.classList.remove("hidden");
+        infoRow.classList.remove("hidden");
+      } else {
+        pcEl.innerHTML = "";
+        pcEl.classList.add("hidden");
+      }
+
+      renderForecastChart(rows);
+      renderPERatioChart(rows);
+
+      const input = $("tech-search-input");
+      if (input) {
+        input.value = "";
+        input.blur();
+      }
+    }
+
+    function wireTechSearch() {
+      const input = $("tech-search-input");
+      const clearBtn = $("tech-clear-btn");
+      if (!input) return;
+
+      input.addEventListener("change", () => {
+        const val = input.value.trim();
+        if (!val) return;
+        const found = allSegments.find(s => s.segment.toLowerCase() === val.toLowerCase());
+        if (found) {
+          handleSegmentSelect(found.segment, found.rows);
+          document.getElementById("tech-info-row")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const val = input.value.trim();
+          if (!val) return;
+          let found = allSegments.find(s => s.segment.toLowerCase() === val.toLowerCase());
+          if (!found) found = allSegments.find(s => s.segment.toLowerCase().startsWith(val.toLowerCase()));
+          if (found) {
+            handleSegmentSelect(found.segment, found.rows);
+            document.getElementById("tech-info-row")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }
+      });
+
+      if (clearBtn) {
+        clearBtn.addEventListener("click", () => {
+          input.value = "";
+          input.focus();
+        });
+      }
+    }
+
+    function renderForecastChart(dataRows) {
+      const fc = $("forecast-container");
+      fc.classList.remove("hidden");
+
+      const values = dataRows.map(r => ({
+        med25: +r.market_size_2025_busd_median || 0,
+        std25: +r.market_size_2025_busd_std || 0,
+        med30: +r.market_size_2030_busd_median || 0,
+        std30: +r.market_size_2030_busd_std || 0,
+        n25: +r.market_size_2025_busd_estimates_count || 0,
+        n30: +r.market_size_2030_busd_estimates_count || 0
+      }));
+
+      const mean25 = Math.max(0, d3.mean(values, d => d.med25) || 0);
+      const std25  = d3.mean(values, d => d.std25) || 0;
+      const mean30 = Math.max(0, d3.mean(values, d => d.med30) || 0);
+      const std30  = d3.mean(values, d => d.std30) || 0;
+
+      const n25 = d3.max(values, d => d.n25) || 0;
+      const n30 = d3.max(values, d => d.n30) || 0;
+
+      const cagr = Math.pow(mean30/mean25 || 1, 1/5) - 1;
+      const oldP = fc.querySelector("p.__cagr_text");
+      if (oldP) oldP.remove();
+      const cagrP = document.createElement("p");
+      cagrP.className = "__cagr_text";
+      cagrP.textContent = `CAGR 2025–2030: ${isFinite(cagr) ? (cagr*100).toFixed(1) : "0.0"}%`;
+      cagrP.style.color = "#FFD580";
+      cagrP.style.fontWeight = "500";
+      cagrP.style.marginTop = "8px";
+      const titleEl = fc.querySelector(".box-title");
+      if (titleEl) titleEl.insertAdjacentElement("afterend", cagrP);
+
+      const svg = d3.select("#forecast-chart");
+      svg.selectAll("*").remove();
+
+      const svgEl = svg.node();
+      const width = svgEl.getBoundingClientRect().width || svgEl.clientWidth || 600;
+      const height  = 300;
+      const margin  = { top: 40, right: 30, bottom: 40, left: 70 };
+      const innerW  = width - margin.left - margin.right;
+      const innerH  = height - margin.top - margin.bottom;
+
+      const y = d3.scaleBand()
+        .domain(["2025","2030"])
+        .range([0, innerH])
+        .padding(0.4);
+
+      const xMax = Math.max(mean25 + 2*std25, mean30 + 2*std30, 1);
+      const x = d3.scaleLinear().domain([0, xMax]).nice().range([0, innerW]);
+
+      svg.attr("viewBox", `0 0 ${width} ${height}`);
+      const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+      const data = [
+        { year: "2025", median: Math.max(0, mean25), q1: Math.max(0, mean25 - 0.675*std25), q3: Math.max(0, mean25 + 0.675*std25), n: n25, color: "#B8E2B8" },
+        { year: "2030", median: Math.max(0, mean30), q1: Math.max(0, mean30 - 0.675*std30), q3: Math.max(0, mean30 + 0.675*std30), n: n30, color: "#8BE0F3" }
+      ];
+
+      const tooltip = d3.select("body").append("div")
+        .attr("class", "box-tooltip")
+        .style("position","absolute")
+        .style("pointer-events","none")
+        .style("background","rgba(0,0,0,0.8)")
+        .style("color","#fff")
+        .style("padding","8px 12px")
+        .style("border-radius","6px")
+        .style("font-size","13px")
+        .style("opacity",0);
+
+      g.selectAll(".box")
+        .data(data)
+        .enter()
+        .append("rect")
+          .attr("class","box")
+          .attr("x", d => x(d.q1))
+          .attr("y", d => y(d.year))
+          .attr("width", d => Math.max(0, x(d.q3) - x(d.q1)))
+          .attr("height", y.bandwidth())
+          .attr("stroke", d => d.color)
+          .attr("stroke-width", 2)
+          .attr("fill", d => d.color)
+          .attr("fill-opacity", 0.18)
+          .on("mouseover", function(evt,d){
+            tooltip.style("opacity",1).html(`
+              <strong style="color:${d.color}">${d.year}</strong><br/>
+              Median: $${d.median.toFixed(1)}B<br/>
+              IQR: $${d.q1.toFixed(1)}B – $${d.q3.toFixed(1)}B<br/>
+              Estimates (N): ${d.n}
+            `);
+          })
+          .on("mousemove", evt => {
+            tooltip.style("left",(evt.pageX+10)+"px").style("top",(evt.pageY-28)+"px");
+          })
+          .on("mouseout",()=>tooltip.style("opacity",0));
+
+      g.selectAll(".median")
+        .data(data)
+        .enter()
+        .append("line")
+          .attr("class","median")
+          .attr("x1", d => x(d.median))
+          .attr("x2", d => x(d.median))
+          .attr("y1", d => y(d.year))
+          .attr("y2", d => y(d.year) + y.bandwidth())
+          .attr("stroke", d => d.color)
+          .attr("stroke-width", 2.5);
+
+      g.append("g")
+        .attr("transform", `translate(0,${innerH})`)
+        .call(d3.axisBottom(x).ticks(6).tickFormat(d=>`$${d.toFixed(0)}B`))
+        .selectAll("text").style("fill","#B8CBE2");
+
+      g.append("g")
+        .call(d3.axisLeft(y))
+        .selectAll("text").style("fill","#B8CBE2");
+    }
+
+    function renderCompanies(segment) {
+      $("company-label").classList.remove("hidden");
+      $("company-search-row").classList.remove("hidden");
+      $("company-level").classList.remove("hidden");
+      $("company-level").innerHTML = "";
+
+      // reset within-Companies blocks
+      $("insights-container").classList.add("hidden");
+      $("product-level").classList.add("hidden");
+      $("financials-container").classList.add("hidden");
+      $("insights-container").innerHTML = "";
+      $("product-level").innerHTML = "";
+      $("financials-container").innerHTML = "";
+
+      const filtered = rawData.filter(r =>
+        r.market_segment && r.market_segment.includes(segment) && r.company_name
+      );
+      const companyMap = groupBy(filtered, "company_name");
+
+      const companies = Object.entries(companyMap).map(([company, rows]) => {
+        const cap = rows.reduce((m, r) => {
+          const v = toNum(r.market_cap_usd);
+          return isFinite(v) ? Math.max(m, v) : m;
+        }, 0);
+        return { company, rows, cap };
+      }).sort((a, b) => b.cap - a.cap);
+
+      currentCompanies = companies;
+
+      const dl = $("company-list");
+      if (dl) {
+        dl.innerHTML = companies
+          .map(c => `<option value="${c.company}"></option>`)
+          .join("");
+      }
+
+      companies.slice(0, 3).forEach(c => {
+        $("company-level").appendChild(
+          makeCard(c.company, () => {
+            renderCompanyInsights(c.company); // directly below company cards
+            renderProducts(c.company);
+            renderFinancials(c.company);
+          }, c.cap)
+        );
+      });
+    }
+
+    function wireCompanySearch() {
+      const input = $("company-search-input");
+      const clearBtn = $("company-clear-btn");
+      if (!input) return;
+
+      const go = (val) => {
+        if (!val) return;
+        let found = currentCompanies.find(c => c.company.toLowerCase() === val.toLowerCase());
+        if (!found) found = currentCompanies.find(c => c.company.toLowerCase().startsWith(val.toLowerCase()));
+        if (found) {
+          renderCompanyInsights(found.company);
+          renderProducts(found.company);
+          renderFinancials(found.company);
+          $("insights-container")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          input.blur();
+        }
+      };
+
+      input.onchange = () => go(input.value.trim());
+      input.onkeydown = (e) => {
+        if (e.key === "Enter") go(input.value.trim());
+      };
+
+      if (clearBtn) {
+        clearBtn.onclick = () => {
+          input.value = "";
+          input.focus();
+        };
+      }
+    }
+
+    // ===== START PATCH: renderCompanyInsights (date above 'Recent Developments', remove bottom) =====
+    function renderCompanyInsights(company) {
+      const container = $("insights-container");
+      container.classList.remove("hidden");
+      container.innerHTML = "";
+
+      const rows = rawData.filter(r => r.company_name === company);
+      if (!rows.length) return;
+
+      let row = rows[0];
+      const withTime = rows
+        .map(r => ({ r, t: Date.parse(r.research_capture_time || r.capture_time || 0) || 0 }))
+        .sort((a,b) => b.t - a.t);
+      if (withTime.length) row = withTime[0].r;
+
+      const risks = row.risks || "";
+      const opportunities = row.opportunities || "";
+      const moat = row.moat || "";
+
+      // Use updated_business_summary first; fallback to long_business_summary
+      const updatedSummary = (() => {
+        const primary = row.updated_business_summary ?? row.updatedBusinessSummary;
+        if (primary && String(primary).trim()) return String(primary).trim();
+        const fallback = row.long_business_summary ?? row.longBusinessSummary;
+        return (fallback && String(fallback).trim()) ? String(fallback).trim() : "";
+      })();
+
+      // strict US-style timestamp: 'Oct 07, 2025, 09:53 AM'
+      function formatCaptureDateUS(dtLike) {
+        if (!dtLike) return "-";
+        const d = new Date(dtLike);
+        if (isNaN(d)) return "-";
+        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        const mon = months[d.getMonth()];
+        const dd  = String(d.getDate()).padStart(2,"0");
+        const yyyy = d.getFullYear();
+        let hh = d.getHours();
+        const mm = String(d.getMinutes()).padStart(2,"0");
+        const ampm = hh >= 12 ? "PM" : "AM";
+        hh = hh % 12; if (hh === 0) hh = 12;
+        const hh2 = String(hh).padStart(2,"0");
+        return `${mon} ${dd}, ${yyyy}, ${hh2}:${mm} ${ampm}`;
+      }
+
+      const capturedDisplay = formatCaptureDateUS(row.research_capture_time || row.capture_time);
+
+      const div = document.createElement("div");
+      div.className = "card";
+      div.style.flex = "1 0 100%";
+      div.style.cursor = "default";
+      div.innerHTML = `
+        <div class="box-title">Company Insights</div>
+
+        <div style="font-size:12px; opacity:.8; margin:4px 0 10px;">${capturedDisplay}</div>
+
+        <div class="insight-subtitle">Recent Developments</div>
+        <div style="font-size:13px; line-height:1.6; white-space:pre-wrap;">${updatedSummary}</div>
+
+        <div class="toggle-row">
+          <button class="toggle-btn" id="btn-opps">Opportunities</button>
+          <button class="toggle-btn" id="btn-risks">Risks</button>
+          <button class="toggle-btn" id="btn-moat">Moat</button>
+        </div>
+
+        <div id="opps-content" class="toggle-content hidden">${opportunities}</div>
+        <div id="risks-content" class="toggle-content hidden">${risks}</div>
+        <div id="moat-content" class="toggle-content hidden">${moat}</div>
+      `;
+      container.appendChild(div);
+
+      // wire toggles
+      div.querySelector("#btn-opps")?.addEventListener("click", () => {
+        const el = div.querySelector("#opps-content");
+        if (el) el.classList.toggle("hidden");
+      });
+      div.querySelector("#btn-risks")?.addEventListener("click", () => {
+        const el = div.querySelector("#risks-content");
+        if (el) el.classList.toggle("hidden");
+      });
+      div.querySelector("#btn-moat")?.addEventListener("click", () => {
+        const el = div.querySelector("#moat-content");
+        if (el) el.classList.toggle("hidden");
+      });
+    }
+    // ===== END PATCH: renderCompanyInsights =====
+
+
+
+
+// ===== START PATCH: renderProducts — trim spaces and remove blank lines between products =====
+function renderProducts(company) {
+  const level = $("product-level");
+  level.classList.remove("hidden");
+  level.innerHTML = "";
+
+  const clean = (s) => String(s || "")
+    .replace(/\u00A0/g, " ")     // non-breaking space → regular
+    .replace(/\s+/g, " ")        // collapse whitespace
+    .trim();
+
+  // collect all products for this company
+  const rows = rawData.filter(r => r.company_name === company && r.product_name);
+  const productMap = new Map();
+
+  rows.forEach(r => {
+    const names = String(r.product_name || "")
+      .split(",")
+      .map(clean)
+      .filter(Boolean);
+
+    const descs = String(r.product_description || "")
+      .split(",")
+      .map(clean); // lengths may differ; safe access below
+
+    names.forEach((name, i) => {
+      const desc = clean(descs[i] || "");
+      if (!productMap.has(name)) productMap.set(name, desc);
+    });
+  });
+
+  if (productMap.size === 0) {
+    level.classList.add("hidden");
+    return;
+  }
+
+  // One tile, each product on exactly one line; no extra gaps
+  const lines = Array.from(productMap.entries())
+    .filter(([name]) => !!name) // guard
+    .map(([name, desc]) => `<span><strong>${name}</strong>${desc ? `: ${desc}` : ""}</span>`);
+
+  const div = document.createElement("div");
+  div.className = "card";
+  div.style.flex = "1 0 320px";
+  div.innerHTML = `
+    <div class="box-title">Product</div>
+    <div style="font-size:14px; line-height:1.5; display:flex; flex-direction:column; gap:0;">
+      ${lines.join("<br/>")}
+    </div>
+  `;
+  level.appendChild(div);
+}
+// ===== END PATCH: renderProducts =====
+
+
+
+// ===== START PATCH: renderFinancials — Overview uses data from `long_business_summary` =====
+function renderFinancials(company) {
+  const container = $("financials-container");
+  container.classList.remove("hidden");
+  container.innerHTML = "";
+
+  const rows = rawData.filter(r => r.company_name === company);
+  if (!rows.length) return;
+  const r = rows[0];
+
+  const perfId = `perf-chart-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+
+  // Use long_business_summary (camelCase) exclusively here; blank if missing
+  const longBS = (r.long_business_summary && String(r.long_business_summary).trim())
+    ? String(r.long_business_summary).trim()
+    : "";
+
+  // 1) Company Overview (Stock Info + Website + Business Summary from long_business_summary)
+  const overview = document.createElement("div");
+  overview.className = "card";
+  overview.style.flex = "1 0 100%"; // wide tile
+  overview.style.cursor = "default";
+  overview.innerHTML = `
+    <div class="box-title">Company Overview</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+      <div>
+        <div style="opacity:.85;margin-bottom:6px;">Stock Information</div>
+        <div>Symbol: ${r.symbol || "-"}</div>
+        <div>Exchange: ${r.exchange_name || "-"}</div>
+        <div>Country: ${r.country || "-"}</div>
+      </div>
+      <div>
+        <div style="opacity:.85;margin-bottom:6px;">Website</div>
+        ${r.website ? `<a href="${r.website}" target="_blank" style="color:#8BE0F3;word-break:break-all;">${r.website}</a>` : "-"}
+      </div>
+    </div>
+    <div class="insight-subtitle" style="margin-top:14px;">Summary</div>
+    <div style="font-size:13px; line-height:1.6; white-space:pre-wrap;">${longBS}</div>
+  `;
+  container.appendChild(overview);
+
+  // 2) Core Values (Market Valuation + Volume + Earnings)
+  const core = document.createElement("div");
+  core.className = "card";
+  core.style.flex = "1 0 320px";
+  core.style.cursor = "default";
+  core.innerHTML = `
+    <div class="box-title">Core Values</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+      <div>
+        <div style="opacity:.85;margin-bottom:6px;">Market Valuation</div>
+        <div>Market Cap: ${fmtSize(r.market_cap_usd)}</div>
+        <div>Current Price: $${parseFloat(r.current_price_usd || 0).toFixed(2)}</div>
+      </div>
+      <div>
+        <div style="opacity:.85;margin-bottom:6px;">Volume</div>
+        <div>${r.volume_units || "-"}</div>
+        <div style="opacity:0.7;">USD: ${fmtSize(r.volume_traded_usd)}</div>
+      </div>
+      <div>
+        <div style="opacity:.85;margin-bottom:6px;">Earnings</div>
+        <div>Trailing EPS: ${r.trailing_eps ?? "-"}</div>
+        <div>EBITDA: ${fmtSize(r.ebitda_usd)}</div>
+      </div>
+    </div>
+  `;
+  container.appendChild(core);
+
+  // 3) Performance (mini chart)
+  const perfCard = document.createElement("div");
+  perfCard.className = "card";
+  perfCard.style.flex = "1 0 240px";
+  perfCard.style.cursor = "default";
+  perfCard.innerHTML = `
+    <div class="box-title">Performance</div>
+    <svg id="${perfId}" class="perf-chart" role="img" aria-label="Performance 1Y 2Y 5Y"></svg>
+  `;
+  container.appendChild(perfCard);
+
+  // draw the performance graph with palette + capped/scaled heights
+  renderPerformanceGraph(`#${perfId}`, {
+    oneY:  isFinite(+r.pct_1y)  ? +r.pct_1y  : null,
+    twoY:  isFinite(+r.pct_2y)  ? +r.pct_2y  : null,
+    fiveY: isFinite(+r.pct_5y)  ? +r.pct_5y  : null
+  });
+}
+// ===== END PATCH: renderFinancials =====
+
+
+
+    // --- SIMPLE 3-BAR PERFORMANCE GRAPH (palette-matched, capped & scaled) ---
+    function renderPerformanceGraph(selector, perf) {
+      const series = [
+        { k: "1Y",  v: perf.oneY  ?? 115.0 },
+        { k: "2Y",  v: perf.twoY  ?? 337.0 },
+        { k: "5Y",  v: perf.fiveY ?? -13.0 }
+      ];
+
+      const svg = d3.select(selector);
+      if (svg.empty()) return;
+      svg.selectAll("*").remove();
+
+      const node   = svg.node();
+      const width  = node.getBoundingClientRect().width || node.clientWidth || 320;
+      const height = 90; // compact to fit the tile
+      const margin = { top: 6, right: 8, bottom: 20, left: 8 };
+      const innerW = width - margin.left - margin.right;
+      const innerH = height - margin.top - margin.bottom;
+
+      svg.attr("viewBox", `0 0 ${width} ${height}`);
+      const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+      // baseline centered in the mini-chart
+      const baselineY = Math.round(innerH / 2);
+
+      // max heights (caps) for bars; largest pos & neg map to these heights
+      const MAX_BAR_H_POS = 18;  // px
+      const MAX_BAR_H_NEG = 18;  // px
+
+      const posMax = d3.max(series.filter(d => d.v > 0), d => d.v) || 0;
+      const negMax = d3.max(series.filter(d => d.v < 0), d => Math.abs(d.v)) || 0;
+
+      const barHeight = d => {
+        const abs = Math.abs(d.v);
+        if (d.v >= 0) return posMax > 0 ? (abs / posMax) * MAX_BAR_H_POS : 0;
+        return negMax > 0 ? (abs / negMax) * MAX_BAR_H_NEG : 0;
+      };
+
+      // colors per your palette
+      const POS = "#B8E2B8"; // pastel green
+      const NEG = "#E2B8B8"; // pastel red/pink
+
+      const x = d3.scaleBand()
+        .domain(series.map(d => d.k))
+        .range([0, innerW])
+        .padding(0.4);
+
+      // zero baseline
+      g.append("line")
+        .attr("class","perf-zero-line")
+        .attr("x1", 0).attr("x2", innerW)
+        .attr("y1", baselineY).attr("y2", baselineY);
+
+      // bars (scaled, capped, no overlap)
+      g.selectAll("rect.perf")
+        .data(series)
+        .enter()
+        .append("rect")
+          .attr("class", "perf")
+          .attr("x", d => x(d.k))
+          .attr("y", d => d.v >= 0 ? (baselineY - barHeight(d)) : baselineY)
+          .attr("width", x.bandwidth())
+          .attr("height", d => barHeight(d))
+          .attr("rx", 6).attr("ry", 6)
+          .attr("fill", d => d.v >= 0 ? POS : NEG);
+
+      // value labels (above positive, below negative)
+      g.selectAll("text.perf-val")
+        .data(series)
+        .enter()
+        .append("text")
+          .attr("class", "perf-val")
+          .attr("x", d => x(d.k) + x.bandwidth()/2)
+          .attr("y", d => d.v >= 0 ? (baselineY - barHeight(d) - 4) : (baselineY + barHeight(d) + 12))
+          .attr("text-anchor", "middle")
+          .attr("fill", "#B8CBE2")
+          .attr("font-size", "11px")
+          .text(d => `${(Math.round(d.v * 10) / 10).toFixed(1)}%`);
+
+      // x labels
+      g.selectAll("text.perf-x")
+        .data(series)
+        .enter()
+        .append("text")
+          .attr("class", "perf-x")
+          .attr("x", d => x(d.k) + x.bandwidth()/2)
+          .attr("y", innerH + 14)
+          .attr("text-anchor", "middle")
+          .attr("fill", "#B8CBE2")
+          .attr("font-size", "11px")
+          .text(d => d.k);
+    }
+
+    function renderMarketCapPieChart(dataRows) {
+      const svgEl = document.getElementById("marketcap-pie-chart");
+      const legendDiv = document.getElementById("marketcap-legend");
+      const svg = d3.select(svgEl);
+
+      svg.selectAll("*").remove();
+      if (legendDiv) legendDiv.innerHTML = "";
+
+      const container = svgEl.parentNode;
+      let w = container && container.clientWidth ? container.clientWidth : 0;
+      if (!w || w < 260) w = 320;
+      const size   = Math.min(w - 24, 360);
+      const width  = size;
+      const height = size;
+      const radius = size / 2;
+      const innerR = radius / 2;
+
+      svg
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("width", width)
+        .attr("height", height)
+        .attr("preserveAspectRatio", "xMidYMid meet");
+
+      const g = svg.append("g")
+        .attr("transform", `translate(${width/2},${height/2})`);
+
+      const aggregated = dataRows.reduce((acc, r) => {
+        const name = r.company_name;
+        const cap  = toNum(r.market_cap_usd);
+        if (!name || !isFinite(cap) || cap <= 0) return acc;
+        acc[name] = (acc[name] || 0) + cap;
+        return acc;
+      }, {});
+      let entries = Object.entries(aggregated);
+
+      if (entries.length === 0) {
+        g.append("text")
+          .attr("text-anchor", "middle")
+          .style("fill", "#B8CBE2")
+          .style("font-size", "14px")
+          .text("No market cap data");
+        return;
+      }
+
+      const totalCap = entries.reduce((s, [,v]) => s + v, 0);
+      const minPct = 0.03;
+      const kept = [], small = [];
+      entries.forEach(e => ((e[1] / totalCap) >= minPct ? kept : small).push(e));
+      const othersSum = small.reduce((s, [,v]) => s + v, 0);
+      entries = kept.sort((a,b) => b[1] - a[1]);
+      if (othersSum > 0) entries.push(["Others", othersSum]);
+
+      const colors = [
+        "#8BE0F3","#B8E2B8","#E2B8B8","#FFD580",
+        "#7EC8E3","#9ED9C2","#D9A9A9","#EFCB8C"
+      ];
+      const color = d3.scaleOrdinal().domain(entries.map(d => d[0])).range(colors);
+
+      const pie = d3.pie().sort(null).value(d => d[1])(entries);
+      const arc = d3.arc().innerRadius(innerR).outerRadius(radius);
+
+      const slices = g.selectAll("path")
+        .data(pie)
+        .enter()
+        .append("path")
+          .attr("d", arc)
+          .attr("fill", d => color(d.data[0]))
+          .attr("stroke", "#141414")
+          .attr("stroke-width", 1);
+
+      g.append("text")
+        .attr("text-anchor","middle")
+        .attr("y",-2)
+        .style("fill","#B8CBE2")
+        .style("font-size","12px")
+        .text("Total");
+
+      g.append("text")
+        .attr("text-anchor","middle")
+        .attr("y",16)
+        .style("fill","#FFD580")
+        .style("font-weight","600")
+        .style("font-size","16px")
+        .text(`$${(totalCap/1e9).toFixed(2)}B`);
+
+      let tooltip = d3.select("body").select(".pie-tooltip");
+      if (tooltip.empty()) {
+        tooltip = d3.select("body").append("div")
+          .attr("class","pie-tooltip")
+          .style("position","absolute")
+          .style("pointer-events","none")
+          .style("background","rgba(0,0,0,0.8)")
+          .style("color","#fff")
+          .style("padding","8px 12px")
+          .style("border-radius","6px")
+          .style("font-size","13px")
+          .style("opacity",0);
+      }
+
+      slices
+        .on("mouseover", function (evt, d) {
+          const [x, y] = arc.centroid(d);
+          const offset = 8;
+          d3.select(this)
+            .transition().duration(200)
+            .attr("transform", `translate(${x * offset / radius},${y * offset / radius})`)
+            .attr("stroke", "#B8CBE2")
+            .attr("stroke-width", 2);
+
+          const capB = (d.data[1] / 1e9).toFixed(2);
+          const pct  = ((d.data[1] / totalCap) * 100).toFixed(1);
+
+          tooltip
+            .style("opacity", 1)
+            .html(`
+              <strong style="color:#FFD580">${d.data[0]}</strong><br/>
+              $${capB}B<br/>
+              ${pct}%
+            `);
+        })
+        .on("mousemove", evt => {
+          tooltip
+            .style("left", (evt.pageX + 12) + "px")
+            .style("top",  (evt.pageY - 28) + "px");
+        })
+        .on("mouseout", function () {
+          d3.select(this)
+            .transition().duration(200)
+            .attr("transform", "translate(0,0)")
+            .attr("stroke", "#141414")
+            .attr("stroke-width", 1);
+
+          tooltip.style("opacity", 0);
+        });
+
+      if (legendDiv) {
+        legendDiv.innerHTML = entries.map(([name, val]) => {
+          const pct = (val / totalCap) * 100;
+          return `<div class="pie-legend-item" title="${name}">
+            <span class="pie-swatch" style="background:${color(name)}"></span>
+            <span>${name}</span>
+            <span style="margin-left:auto;opacity:0.8;">${pct.toFixed(1)}%</span>
+          </div>`;
+        }).join("");
+      }
+    }
+
+    function renderPERatioChart(dataRows) {
+      const pc = $("pe-ratio-container");
+      pc.classList.remove("hidden");
+
+      d3.select("#pe-tooltip").remove();
+      const svg = d3.select("#pe-ratio-chart");
+      svg.selectAll("*").remove();
+
+      const margin = { top: 20, right: 16, bottom: 80, left: 16 };
+      const chartH = 200;
+
+      const trailing = dataRows
+        .filter(r => r.company_name && isFinite(+r.trailing_pe))
+        .map(r => ({ company: r.company_name, type: "Trailing PE", value: +r.trailing_pe }));
+      const forward  = dataRows
+        .filter(r => r.company_name && isFinite(+r.forward_pe))
+        .map(r => ({ company: r.company_name, type: "Forward PE",  value: +r.forward_pe }));
+      const eps      = dataRows
+        .filter(r => r.company_name && isFinite(+r.trailing_eps))
+        .map(r => ({ company: r.company_name, type: "EPS",          value: +r.trailing_eps }));
+
+      const allData  = [...trailing, ...forward, ...eps];
+      const companies = Array.from(new Set(allData.map(d => d.company)));
+
+      if (companies.length === 0) {
+        svg.attr("width", 600).attr("height", 80);
+        svg.append("text")
+          .attr("x", 12).attr("y", 48)
+          .style("fill", "#B8CBE2").style("font-size", "14px")
+          .text("No valuation data available.");
+        return;
+      }
+
+      const types = ["Trailing PE", "Forward PE", "EPS"];
+
+      const container = document.getElementById("pe-scroll") || svg.node().parentNode;
+      const containerWidth = container && container.clientWidth ? container.clientWidth : 800;
+      const minPerCompany = 140;
+      const fullWidth = Math.max(containerWidth, companies.length * minPerCompany + margin.left + margin.right);
+      const chartW = fullWidth - margin.left - margin.right;
+      const svgH = chartH + margin.top + margin.bottom;
+
+      svg.attr("width", fullWidth).attr("height", svgH);
+
+      const values = allData.map(d => d.value);
+      const minV = d3.min(values) ?? 0;
+      const maxV = d3.max(values) ?? 0;
+      const pad  = (maxV - minV) * 0.1;
+
+      const x0 = d3.scaleBand()
+        .domain(companies)
+        .range([margin.left, margin.left + chartW])
+        .padding(0.2);
+
+      const x1 = d3.scaleBand()
+        .domain(types)
+        .range([0, x0.bandwidth()])
+        .padding(0.1);
+
+      const y = d3.scaleLinear()
+        .domain([Math.min(0, minV - pad), maxV + pad])
+        .range([chartH + margin.top, margin.top]);
+
+      const grouped = companies.map(name => ({
+        company: name,
+        vals: types.map(t => {
+          const found = allData.find(d => d.company === name && d.type === t);
+          return { type: t, value: found ? found.value : 0 };
+        })
+      }));
+
+      const g = svg.append("g");
+
+      const fillByType = {
+        "Trailing PE":"#B8E2B8",
+        "Forward PE":"#E2B8B8",
+        "EPS":"#FFD580"
+      };
+
+      const groups = g.selectAll("g.company-group")
+        .data(grouped)
+        .enter()
+        .append("g")
+          .attr("class", "company-group")
+          .attr("transform", d => `translate(${x0(d.company)},0)`);
+
+      groups.selectAll("rect")
+        .data(d => d.vals)
+        .enter()
+        .append("rect")
+          .attr("x",     d => x1(d.type))
+          .attr("y",     d => d.value >= 0 ? y(d.value) : y(0))
+          .attr("width", x1.bandwidth())
+          .attr("height",d => Math.abs(y(d.value) - y(0)))
+          .attr("fill",  d => fillByType[d.type]);
+
+      groups.selectAll("text.value-label")
+        .data(d => d.vals)
+        .enter()
+        .append("text")
+          .attr("class", "value-label")
+          .attr("x",  d => x1(d.type) + x1.bandwidth()/2)
+          .attr("y",  d => d.value >= 0 ? y(d.value) - 4 : y(d.value) + 12)
+          .attr("text-anchor", "middle")
+          .style("fill", "#fff")
+          .style("font-size", "10px")
+          .text(d => isFinite(d.value) ? d.value.toFixed(2) : "");
+
+      const xAxis = d3.axisBottom(x0).tickSize(0).tickPadding(10);
+      svg.append("g")
+        .attr("transform", `translate(0, ${chartH + margin.top})`)
+        .call(xAxis)
+        .call(g => g.select(".domain").remove())
+        .selectAll("text")
+          .style("fill", "#B8CBE2")
+          .style("font-size", "12px")
+          .style("text-anchor", "middle")
+          .attr("dx", "0.5em")
+          .attr("dy", "0.5em")
+          .text(function(d) { return d.length > 18 ? d.slice(0, 18) + "…" : d; });
+
+      const legend = svg.append("g")
+        .attr("transform", `translate(${margin.left}, ${svgH - 30})`);
+      ["Trailing PE","Forward PE","EPS"].forEach((t, i) => {
+        const xOff = i * 140;
+        legend.append("rect")
+          .attr("x", xOff).attr("y", 0)
+          .attr("width", 16).attr("height", 16)
+          .attr("fill", fillByType[t]);
+        legend.append("text")
+          .attr("x", xOff + 22).attr("y", 13)
+          .style("fill", "#B8CBE2")
+          .style("font-size", "13px")
+          .text(t);
+      });
+
+      const tooltip = d3.select("body").append("div")
+        .attr("id", "pe-tooltip")
+        .style("position", "absolute")
+        .style("pointer-events", "none")
+        .style("background", "rgba(0,0,0,0.7)")
+        .style("color", "white")
+        .style("padding", "8px")
+        .style("border-radius", "4px")
+        .style("font-size", "12px")
+        .style("opacity", 0);
+
+      groups
+        .on("mouseover", (event, d) => {
+          tooltip.transition().duration(100).style("opacity", 1);
+          tooltip.html(
+            `<strong>${d.company}</strong><br/>` +
+            d.vals.map(v => `${v.type}: ${isFinite(v.value) ? v.value.toFixed(2) : "-"}`).join("<br/>")
+          )
+          .style("left", (event.pageX + 10) + "px")
+          .style("top",  (event.pageY - 30) + "px");
+        })
+        .on("mousemove", event => {
+          tooltip
+            .style("left", (event.pageX + 10) + "px")
+            .style("top",  (event.pageY - 30) + "px");
+        })
+        .on("mouseout", () => {
+          tooltip.transition().duration(200).style("opacity", 0);
+        });
+    }
+
+    // Toggle handler for description sources (event delegation)
+    document.addEventListener("click", (e) => {
+      const toggle = document.getElementById("desc-sources-toggle");
+      const list = document.getElementById("desc-sources-list");
+      if (toggle && (e.target === toggle || toggle.contains(e.target))) {
+        const visible = list && list.style.display === "block";
+        if (list) list.style.display = visible ? "none" : "block";
+        toggle.textContent = visible
+          ? toggle.textContent.replace("▾", "▸")
+          : toggle.textContent.replace("▸", "▾");
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", fetchAndRender);
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# VCS
+.git
+.gitignore
+
+# Python caches/artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+
+# Local env/secrets
+.env
+.env.*
+!.env.example
+
+# Local runtime data (do not bake dev DB into images)
+*.db
+*.sqlite
+*.sqlite3
+dev_data/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/

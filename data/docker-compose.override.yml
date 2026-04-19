@@ -1,0 +1,84 @@
+x-gcp-env: &gcp_env
+  DBT_PROFILES_DIR: /usr/local/airflow/.dbt
+  GOOGLE_SECRET_MANAGER_CREDENTIALS: /usr/local/airflow/.dbt/gcp-secrets.json
+  DBT_TARGET_PATH: /tmp/dbt-target
+  DBT_LOG_PATH: /tmp/dbt-logs
+  TARGET: ${TARGET:-dev}
+  PYTHONPATH: /usr/local/airflow:${PYTHONPATH:-}
+  GRPC_VERBOSITY: ERROR
+  GRPC_TRACE: ""
+  ABSL_LOGGING_MIN_SEVERITY: "2"
+  GLOG_minloglevel: "2"
+  GLOG_logtostderr: "0"
+  GLOG_stderrthreshold: "2"
+  # Local SMTP sink (MailHog) so `airflow.utils.email.send_email` works out of the box.
+  AIRFLOW__SMTP__SMTP_HOST: mailhog
+  AIRFLOW__SMTP__SMTP_PORT: "1025"
+  AIRFLOW__SMTP__SMTP_STARTTLS: "False"
+  AIRFLOW__SMTP__SMTP_SSL: "False"
+  AIRFLOW__SMTP__SMTP_MAIL_FROM: "airflow@marketstate.local"
+  # Guardrail: avoid prod-only DagBag timeouts if a DAG accidentally imports heavy deps at module import time.
+  AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: "120"
+
+x-gcp: &gcp
+  environment: *gcp_env
+  volumes:
+    - ./.dbt:/usr/local/airflow/.dbt:rw
+    - ./src:/usr/local/airflow/src:rw
+  depends_on:
+    gcp-secrets-init:
+      condition: service_completed_successfully
+
+
+services:
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "127.0.0.1:38025:8025"
+    restart: unless-stopped
+
+  gcp-secrets-init:
+    image: alpine:3.19
+    environment:
+      GOOGLE_SECRET_MANAGER_CREDENTIALS_B64: ${GOOGLE_SECRET_MANAGER_CREDENTIALS_B64:-}
+      GOOGLE_SECRET_MANAGER_CREDENTIALS: ${GOOGLE_SECRET_MANAGER_CREDENTIALS:-}
+    volumes:
+      - ./.dbt:/usr/local/airflow/.dbt:rw
+    command: >
+      sh -c "set -euo pipefail;
+      mkdir -p /usr/local/airflow/.dbt;
+      if [ -s /usr/local/airflow/.dbt/gcp-secrets.json ]; then
+        exit 0;
+      fi;
+      B64=\"$${GOOGLE_SECRET_MANAGER_CREDENTIALS_B64:-}\";
+      if [ -z \"$$B64\" ]; then
+        B64=\"$${GOOGLE_SECRET_MANAGER_CREDENTIALS:-}\";
+      fi;
+      if [ -z \"$$B64\" ]; then
+        echo 'GOOGLE_SECRET_MANAGER_CREDENTIALS_B64 is empty' >&2;
+        exit 1;
+      fi;
+      printf '%s' \"$$B64\" | base64 -d > /usr/local/airflow/.dbt/gcp-secrets.json"
+    restart: "no"
+
+  api-server:
+    <<: *gcp
+    ports:
+      - "127.0.0.1:8081:8080"
+  scheduler:
+    <<: *gcp
+    environment:
+      <<: *gcp_env
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "False"
+
+  triggerer:
+    <<: *gcp
+    environment:
+      <<: *gcp_env
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "False"
+
+  dag-processor:
+    <<: *gcp
+    environment:
+      <<: *gcp_env
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "False"
