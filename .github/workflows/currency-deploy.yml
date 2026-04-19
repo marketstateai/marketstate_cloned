@@ -24,7 +24,7 @@ jobs:
       - name: Lint
         run: uvx ruff check .
       - name: Type check
-        run: uvx mypy app
+        run: uv run --with mypy mypy app
       - name: Security scan (Bandit)
         run: uvx bandit -r app
       - name: Dependency audit
@@ -63,6 +63,7 @@ jobs:
           allow_unauthenticated: true
           env_vars: |
             ENV=prod
+            DB_SCHEMA=src_prod
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}
             CORS_ORIGINS=${{ secrets.CORS_ORIGINS }}

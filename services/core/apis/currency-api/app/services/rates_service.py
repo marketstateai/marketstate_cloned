@@ -203,6 +203,7 @@ class RatesService:
         if not target_first_date:
             return []
 
+        base_first_date: date | None
         if base_currency == "USD":
             base_first_date = min_date
         else:

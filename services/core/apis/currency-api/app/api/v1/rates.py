@@ -8,12 +8,13 @@ from app.db.session import get_db
 from app.schemas.rates import (
     ConvertedRateQueryResult,
     ConvertedRateRead,
-    DeleteResult,
-    CurrencyRead,
     CurrencyQueryResult,
+    CurrencyRead,
+    DatasetMetadata,
+    DeleteResult,
+    ExchangeRateRead,
     HistoricalRatesRequest,
     SourceRateUpsertRequest,
-    ExchangeRateRead,
 )
 from app.services.rates_service import RatesService
 
@@ -155,10 +156,11 @@ def list_currencies(service: RatesService = Depends(get_rates_service)):
     items = service.list_currencies()
     metadata = service.dataset_metadata()
     normalized = [CurrencyRead.model_validate(item) for item in items]
+    metadata_model = DatasetMetadata.model_validate(metadata)
     return CurrencyQueryResult(
         count=len(normalized),
         items=normalized,
-        metadata=metadata,
+        metadata=metadata_model,
     )
 
 
