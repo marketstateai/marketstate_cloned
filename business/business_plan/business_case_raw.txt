@@ -1,0 +1,133 @@
+Core beliefs: 
+    every person should own part of a good business.
+    patience is hard and long term investing is hard, but it can be made exciting if you can clearly visualise where you will be in say 10 years
+    humans love to feel like they are in control, leverage this to justify usign this vs fund managers etc
+
+Question 1 of 10:
+
+
+User: people between the age of 18 and 50 generally, but not limited to those, people who already invest and potentially have multiple accounts and are already fairly active investors
+
+Problem: there are so many brokers and investment platforms, there are so many stocks, it's hard to know what you own, what you can actually buy, where you can buy it, if you can even buy it, it's hard syncing information, it's hard knowing your perforamnce vs the market, it's hard to know if youu are meeting your finance goals, it's improssibole to reflect on your decisions and adjust course. there are so many people trying to sell products, like brokers who are incentivsed to have you trade and inundate you wiht noise. there is rarely any strategy when it comes to trading on these platofmrs other than hype and fomo
+
+Current workaround: if you have a larger portfolio or would like to invest in things other than just trending stocks, you will need to do lots of research and figure out what stocks you can buy and where and if you are even elligible. so you likely will end up sticking to what is easy and what you know. there is no feedback loop critically, other than perhaps some janky excell spreadsheet. the idea is that histoical information is pure gold and should influence your future behaviour
+
+Outcome: a single source of truth for all their investments, and a robust feedback cycle that aligns with their investment strategy, the app should help people define what that is to begin with 
+
+Why this matters: a single, affordable web app where you can integrate all your investments, figure out where to go for other investments, and most importantly, provide you with progress towards your goal and help you correct course when you're not on target. the idea shoudl really be around setting a finannce goal with a certain amount of captial and a timeframe, and then helping you to ahcieve that
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Question 2 of 10:
+
+Who is the exact first customer for the MVP?
+
+Be very narrow. Not “everyone who invests.”
+
+Answer in this format:
+
+Primary user segment: singles and couples with no children, aged between 25 and 40. some disposable income, happy to spend some time growing their net worth, geography is london for now, perhaps LA/NY/Tokyo, Atlanta , Berlin, etc in the future 
+What they already do today: there are lots of brokers, cheap brokers, where investing is very easy and cheap. but they tend to push tending stocks. so most people in the age bracket will be buying their teslas/nvda etc, but wont have a clear goal, and won't know how they are progress ing toward that goal, it's likely they will own multiple assests, like crypto since it's very hyped
+How many accounts / how active: 2 accounts on average, e.g., interactive brokers and trading212, their company pensionsm coinbase, etc, accounts like revolut which now allow trading stocks and other insturments
+Why they feel this pain more than others: it's hard to know what is where and what it is doing and impossible to tie this into a strategy, this gorup of people tend to be highly educated and so understand the improtance of goal setting, 
+Why they would adopt early: i like the idea of doing an  initital lifetime deal for a small subset of people, it's crtical that peole pay for the service so that it's valued, and because i want to bootstrap, this is a good way to get small subset of users who will provide fedack and reviews and of course raise some initial capital before it changes to a subscription on ly model in the future.
+
+Examples of narrow segments:
+
+self-directed investors with 2–5 brokerage accounts
+expats investing across countries/platforms
+higher-income professionals with pensions + brokers + RSUs
+stock-pickers who track ideas in spreadsheets
+people trying to build toward a target portfolio value by a deadline
+
+The goal here is to identify the single best wedge for the MVP.
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Thought for a second
+
+Good. Your first wedge is getting sharper:
+
+Early MVP user
+25–40, singles/couples, no children, educated, disposable income, 2+ accounts, already investing, often across broker + pension + crypto, and frustrated that none of it connects to a real plan.
+
+That is much better than “retail investors.”
+
+Question 3 of 10:
+
+What is the single biggest promise the MVP should make?
+
+Not a feature list — one promise.
+
+Answer in this format:
+
+Main promise: a platform that will enable people to easily set a long term investing goal, automate the process of consolidating their existing networth, and enable them to see if they are hitting their targets or where they need to refocus\
+What changes for the user after using it for 30 days: a clear set of yearly, monthly goals, aimed at a complete outcome, all their assets in a single place, a birds eye view, a clear strategy of wher ethey want to be in say 10 years, a clear idea of the resources available now and a realistic strategy to get there. actions to get there. additional insights liek cost of FX feeds, borker fees, unexcecpted ppoor or good performance of certain stocks
+What changes for the user after using it for 12 months: a clear idea of how they performed against their yearly goal and actions on how to do better in the next year.
+Why existing tools do not deliver this well enough: i think people in this situatoin might not have a clear goal other than, i have 300 per month to invest and i want to make it work as best as i can , i know the market returns on average 10%. so that would be their benchmark, this platform would need to provide some education about these core beliefs (like the market will return 10% per year if i hodl for long enough, if i want more than that i need to hire someone to invest for me, and very often theese fund managers fail to beat the market, or i do it on my own because i might be able to do 15%).
+
+Examples:
+
+“Know exactly how all your investments are performing against your personal goal.”
+“Turn scattered accounts into a goal-driven investing system.”
+“Help active investors stop random buying and start compounding toward a defined target.”
+“Create a feedback loop between past decisions and future investing behavior.”
+
+We’re trying to define the headline value proposition.
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Turn scattered investing into a goal-driven system that shows whether you are on track, why, and what to change.
+
+That is much stronger than “portfolio tracker.”
+
+Question 4 of 10:
+
+What is the smallest version of the product that still delivers that promise?
+
+This is the most important MVP question.
+
+Answer in this format:
+
+Must-have 1: the ability to set clear acheivie goals, some educational content so people can realistically benchmark, like what are the real benefits of investing in the SandP and the real risks, if i want to grow faster, what are the pros and cons of investing with a fund manager, do they realistically bear the market?, what if i went at it along, what are those who spend say 4hours a week actually acheivieing and what are the upsdies and risks
+Must-have 2: the ability to conslidate all your existing assests in a simple and beautiful overview, there shoudl be two levels, the first high level where you can answer the question "what do i own, what am i worth, am i meeting my own expecations for the goal i set", the second level will be more granual, where you can drill down and start to study specific stock perfmorance, think of this like an app like TraderVue which is a powerful tool to reflect on your day trading decissions so you can constantly course correct
+Must-have 3: market information and stock and exchange / broker infomation shoudl you feel connected to wider market, not some standalone app
+Nice-to-have but not MVP:
+Definitely
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+You now have:
+
+belief
+user
+promise
+MVP scope
+
+Final question, 5 of 5:
+
+What is the core recurring user loop that makes this a business, not just a one-time dashboard?
+
+Answer in this format:
+
+Trigger: what brings the user back regularly? if i expect users to pay a monthly subscription, and they are only investing periodically, they might not use it more than a month, which is expensive, we will need to reframe this into a longer term investment (with the app and without the app), i think there should be prompts for peole to check in weekly and make notes about the market, the idea is to frequently review what they have and potentially consider changing things out. yes, a prompting system, because i ahe so many stocks and i know that my capital could almost certaintly be put to work somewhere else to generate a higher ROI, here this is about educating people that you're better off trading out losing stocks even though loss is very hard for humans if you the situation has changed adn there are better inssturments avaialble, which the assumtoption shoudl be that there are.
+Core action: what they do each week or month: they go in,and are prompted to jounral about taht week, what are there expectations and assumptiosn of the market, or they will be looking to invest more and so will do some research, or they will check performance and see where they are deviating from their goals, or they will review their current holdings with the view to chagne out poor performers 
+Insight/output: what they get from the app: a constant and clear metric on whether they are inline with their goals or are deviating and need to change strategy
+expected usage patterns: what they do differently because of it: the expectations should be that people spend no more than 30 minutes per week, that shoudl be the prompting system, these are all questiosn that should be answered and go into the process of defining realistic goals (multiple choice selection to define goals)
+Behavior change: they shoudl get into the habit of setting aside 30 minutes per week, and will hopefully be motivated by seeing nice fields of green, but we will need to work out the human pyschology element
+Why they keep paying: why this remains valuable after setup: make it clear based on data where they are likely to ned up without the app and where they could end up with the app, the emphasis is that this is a single purchase for intiatial users. but then becomes a cheap subscription for future users, and the amount they are spending is akin to spending a franction of what a fudn manager woudl charge, but emphasize that you are the one in control, people love to feel in control, make this an overarching them and part of the USP that should draw people in
+Another MVP: this is reall the fundamentals of Marketstate: a view of the markets, sectors, industries so people can immegiagely understand which se4ctors/ inudstursies are actually perfoming well or not. 
+
+Examples:
+
+every month they review progress to goal, compare to benchmark, and rebalance
+every week they check whether recent buys still fit the long-term strategy
+every payday they allocate new capital according to the plan
+every quarter they review mistakes, winners, losers, and adjust course
+
+After your answer, I’ll compile everything into a polished MVP.md.

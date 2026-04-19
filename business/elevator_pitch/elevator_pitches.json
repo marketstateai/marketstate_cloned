@@ -1,0 +1,61 @@
+{
+  "core_problem": "Investors cannot clearly see whether their current portfolio decisions are actually getting them to their long-term goals.",
+  "template": {
+    "formula": "We have a Z that helps X accomplish Y",
+    "z": "a SaaS platform",
+    "x": "self-directed investors with multiple accounts",
+    "y": "realise their investment goals"
+  },
+  "pitches": {
+    "earlier_versions": [
+      "We have a SaaS platform that helps active, self-directed investors with multiple accounts see their true portfolio risk, track progress toward long-term goals, and know exactly what to do next.",
+      "We built a SaaS platform that turns fragmented investment accounts into one clear, goal-driven decision system.",
+      "We help multi-account investors replace spreadsheet chaos with one SaaS platform for portfolio clarity, risk insight, and action."
+    ],
+    "template_based": [
+      "We have a SaaS platform that helps self-directed investors with multiple accounts accomplish clearer, goal-driven investment decisions.",
+      "We have an investment operating system that helps active investors with fragmented portfolios accomplish better risk-adjusted decisions.",
+      "We have a portfolio intelligence platform that helps multi-account investors accomplish long-term wealth goals with more clarity and control.",
+      "We have a goal-driven investing SaaS that helps active retail investors accomplish consistent, data-backed portfolio decisions.",
+      "We have a SaaS platform to help self-directed investors with multiple accounts make goal-driven portfolio decisions with confidence."
+    ],
+    "punchy_user_first": [
+      "We have a SaaS platform that helps active investors realise their investment goals by turning scattered accounts into one clear action plan.",
+      "We have a SaaS platform that helps self-directed investors realise their investment goals without guessing what to do next.",
+      "We have a SaaS platform that helps investors realise their investment goals by showing exactly what to change in their portfolio.",
+      "We have a SaaS platform that helps multi-account investors realise their investment goals with clear risk and progress visibility.",
+      "We have a SaaS platform that helps investors realise their investment goals by replacing spreadsheet chaos with confident decisions.",
+      "We have a SaaS platform that helps investors realise their investment goals by connecting portfolio performance to real next actions.",
+      "We have a SaaS platform that helps investors realise their investment goals faster by cutting through market noise.",
+      "We have a SaaS platform that helps active investors realise their investment goals by making risk and progress impossible to miss.",
+      "We have a SaaS platform that helps investors realise their investment goals by turning fragmented data into clear decisions.",
+      "We have a SaaS platform that helps self-directed investors realise their investment goals with one trusted system for what to do now.",
+      "We have a SaaS platform that helps self-directed investors realise their investment goals by turning portfolio noise into clear next actions."
+    ],
+    "feedback_loop_variants": [
+      "We have a SaaS platform that helps self-directed investors realise their investment goals through a constant feedback loop.",
+      "We have a SaaS platform that helps active investors realise their goals through a constant portfolio feedback loop.",
+      "We have a SaaS platform that helps multi-account investors realise their goals through a constant feedback loop of insight and action.",
+      "We have a SaaS platform that helps investors realise their goals through a constant feedback loop tied to risk, performance, and next steps.",
+      "We have a SaaS platform that helps investors realise their goals through a constant feedback loop that keeps them on track."
+    ],
+    "punchy_short": [
+      "We help investors hit their goals.",
+      "We turn portfolio chaos into clear action.",
+      "We make investment progress impossible to miss.",
+      "We show investors if they are on track, now.",
+      "We turn market noise into smarter decisions.",
+      "We help investors act with confidence, not guesswork.",
+      "We convert scattered accounts into one decision engine.",
+      "We help investors stay on track through constant feedback.",
+      "We make better portfolio decisions repeatable.",
+      "We help investors realise goals with a continuous feedback loop.",
+      "We help self-directed investors realise their goals through a constant feedback loop."
+    ]
+  },
+  "recommended": {
+    "single_line": "We have a SaaS platform that helps self-directed investors realise their investment goals through a constant feedback loop.",
+    "alt": "We have a SaaS platform that helps self-directed investors realise their investment goals by turning portfolio noise into clear next actions.",
+    "punchy_short": "We help self-directed investors realise their goals through a constant feedback loop."
+  }
+}

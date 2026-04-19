@@ -1,0 +1,56 @@
+# Local environments
+.venv/
+venv/
+
+# Python cache/build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Environment and secrets
+.env
+.env.*
+**/.env
+**/.env.*
+*.pem
+*.key
+*.pub
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+*.secret
+*.secrets
+secrets/
+data/.dbt/gcp-secrets.json
+**/gcp-secrets.json
+**/*credentials*.json
+**/*credential*.json
+**/*service-account*.json
+**/*service_account*.json
+**/*.p12
+**/*.pfx
+
+# Airflow/dbt local artifacts
+logs/
+airflow-webserver.pid
+airflow-scheduler.pid
+data/.astro/.cache/
+data/.dbt/*.json
+data/dags/dbt/marketstate/target/
+data/dags/dbt/marketstate/dbt_packages/
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/

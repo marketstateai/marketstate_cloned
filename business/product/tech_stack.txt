@@ -1,0 +1,23 @@
+TECH STACK
+
+Front End
+- Vue.js (vuejs.org) - FREE
+- React (react.dev) - FREE
+
+Back End
+- Laravel (laravel.com) - FREE
+
+Voice Typing
+- Willow Voice (willowvoice.com) - $10 per user
+
+Meeting Notes
+- Granola (granola.ai) - $35 per user
+
+Communication
+- Slack (slack.com) - $15 per user
+
+Web Design
+- Framer (framer.com) - $100 per user
+
+Prototyping
+- v0 (v0.app) - $30 per user

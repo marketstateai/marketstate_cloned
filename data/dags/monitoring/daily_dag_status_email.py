@@ -58,9 +58,7 @@ def _subject_prefix() -> str:
 
 
 def _brevo_api_token() -> str:
-    # value = Variable.get("BREVO_API_TOKEN", os.getenv("BREVO_API_TOKEN", ""))
-    # value = os.environ.get("BREVO_API_TOKEN")
-    value = "6q8F5jXYN9TsCvpM"
+    value = Variable.get("BREVO_API_TOKEN", os.getenv("BREVO_API_TOKEN", ""))
     value = (value or "").strip()
     if not value:
         raise ValueError("Missing Brevo SMTP token: set BREVO_API_TOKEN (Airflow Variable or env var).")
