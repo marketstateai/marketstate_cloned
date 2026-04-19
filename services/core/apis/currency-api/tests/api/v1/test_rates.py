@@ -175,7 +175,9 @@ def test_historical_converted_rates_put(client):
 
 def test_auth_required(client):
     _seed_once()
-    response = client.get("/api/v1/currencies", headers={"X-Forwarded-For": "203.0.113.18"})
+    response = client.get(
+        "/api/v1/currencies", headers={"X-Forwarded-For": "203.0.113.18"}
+    )
     assert response.status_code == 401
 
 

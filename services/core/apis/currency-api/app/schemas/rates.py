@@ -28,8 +28,12 @@ class CurrencyRead(BaseModel):
 
 class DatasetMetadata(BaseModel):
     total_records: int = Field(description="Total number of rows in the dataset.")
-    min_date: date_type | None = Field(description="Earliest date present in the dataset.")
-    max_date: date_type | None = Field(description="Latest date present in the dataset.")
+    min_date: date_type | None = Field(
+        description="Earliest date present in the dataset."
+    )
+    max_date: date_type | None = Field(
+        description="Latest date present in the dataset."
+    )
     number_of_currencies: int = Field(description="Count of distinct currencies.")
     expected_daily_records: int = Field(
         description="Expected rows for full daily coverage across all currencies.",
@@ -74,7 +78,9 @@ class HistoricalRatesRequest(BaseModel):
 class SourceRateUpsertRequest(BaseModel):
     target_currency: str = Field(description="Target currency code to store, e.g. EUR.")
     date: date_type = Field(description="Record date in YYYY-MM-DD.")
-    rate: float = Field(description="Rate of target currency expressed against USD baseline.")
+    rate: float = Field(
+        description="Rate of target currency expressed against USD baseline."
+    )
     currency_name: str | None = Field(
         default=None,
         description="Optional human-readable currency name.",

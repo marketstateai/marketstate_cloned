@@ -1,11 +1,7 @@
 name: Deploy GCP Cloud Function
 
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - "services/core/apis/currency-api/**"
-      - ".github/workflows/currency-deploy.yml"
+  workflow_dispatch:
 
 jobs:
   quality:

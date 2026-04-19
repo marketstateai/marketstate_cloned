@@ -36,7 +36,9 @@ def get_rates_service(db: Session = Depends(get_db)) -> RatesService:
 )
 def latest_converted_rate(
     target_currency: str = Query(..., description="Target currency code, e.g. EUR."),
-    base_currency: str = Query("USD", description="Base currency code, default is USD."),
+    base_currency: str = Query(
+        "USD", description="Base currency code, default is USD."
+    ),
     service: RatesService = Depends(get_rates_service),
 ):
     item = service.latest_converted_rate(
@@ -61,7 +63,9 @@ def latest_converted_rate(
 )
 def historical_converted_rates(
     target_currency: str = Query(..., description="Target currency code, e.g. EUR."),
-    base_currency: str = Query("USD", description="Base currency code, default is USD."),
+    base_currency: str = Query(
+        "USD", description="Base currency code, default is USD."
+    ),
     date_from: date = Query(..., description="Range start date in YYYY-MM-DD."),
     date_to: date = Query(..., description="Range end date in YYYY-MM-DD."),
     service: RatesService = Depends(get_rates_service),

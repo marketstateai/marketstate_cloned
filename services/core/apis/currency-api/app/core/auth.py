@@ -4,6 +4,7 @@ from fastapi import Header, HTTPException, status
 
 from app.core.config import get_settings
 
+
 def require_api_token(
     x_api_token: str | None = Header(default=None),
 ) -> None:

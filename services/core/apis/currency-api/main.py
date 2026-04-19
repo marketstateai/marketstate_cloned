@@ -35,4 +35,6 @@ def currency_api(request):
         for k, v in upstream.headers.items()
         if k.lower() not in {"content-length", "transfer-encoding", "connection"}
     }
-    return Response(upstream.content, status=upstream.status_code, headers=passthrough_headers)
+    return Response(
+        upstream.content, status=upstream.status_code, headers=passthrough_headers
+    )

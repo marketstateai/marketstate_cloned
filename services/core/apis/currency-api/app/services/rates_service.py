@@ -49,11 +49,14 @@ class RatesService:
         return [{"currency": row.currency, "currency_name": None} for row in rows]
 
     def dataset_metadata(self) -> dict[str, int | date | None]:
-        total_records = int(self.db.scalar(select(func.count()).select_from(ExchangeRate)) or 0)
+        total_records = int(
+            self.db.scalar(select(func.count()).select_from(ExchangeRate)) or 0
+        )
         min_date = self.db.scalar(select(func.min(ExchangeRate.date)))
         max_date = self.db.scalar(select(func.max(ExchangeRate.date)))
         number_of_currencies = int(
-            self.db.scalar(select(func.count(func.distinct(ExchangeRate.currency)))) or 0
+            self.db.scalar(select(func.count(func.distinct(ExchangeRate.currency))))
+            or 0
         )
 
         expected_daily_records = 0
@@ -193,7 +196,9 @@ class RatesService:
             return []
 
         target_first_date = self.db.scalar(
-            select(func.min(ExchangeRate.date)).where(ExchangeRate.currency == target_currency)
+            select(func.min(ExchangeRate.date)).where(
+                ExchangeRate.currency == target_currency
+            )
         )
         if not target_first_date:
             return []
@@ -202,7 +207,9 @@ class RatesService:
             base_first_date = min_date
         else:
             base_first_date = self.db.scalar(
-                select(func.min(ExchangeRate.date)).where(ExchangeRate.currency == base_currency)
+                select(func.min(ExchangeRate.date)).where(
+                    ExchangeRate.currency == base_currency
+                )
             )
             if not base_first_date:
                 return []
@@ -245,19 +252,28 @@ class RatesService:
 
         target_idx = 0
         current_target = target_rows[0]
-        while target_idx + 1 < len(target_rows) and target_rows[target_idx + 1].date <= effective_start:
+        while (
+            target_idx + 1 < len(target_rows)
+            and target_rows[target_idx + 1].date <= effective_start
+        ):
             target_idx += 1
             current_target = target_rows[target_idx]
 
         base_idx = 0
         current_base = base_rows[0] if base_rows else None
         if base_currency != "USD":
-            while base_idx + 1 < len(base_rows) and base_rows[base_idx + 1].date <= effective_start:
+            while (
+                base_idx + 1 < len(base_rows)
+                and base_rows[base_idx + 1].date <= effective_start
+            ):
                 base_idx += 1
                 current_base = base_rows[base_idx]
 
         while current_date <= end_date:
-            while target_idx + 1 < len(target_rows) and target_rows[target_idx + 1].date <= current_date:
+            while (
+                target_idx + 1 < len(target_rows)
+                and target_rows[target_idx + 1].date <= current_date
+            ):
                 target_idx += 1
                 current_target = target_rows[target_idx]
 
@@ -269,7 +285,10 @@ class RatesService:
                 converted = float(current_target.rate)
                 forward_filled = current_target.date < current_date
             else:
-                while base_idx + 1 < len(base_rows) and base_rows[base_idx + 1].date <= current_date:
+                while (
+                    base_idx + 1 < len(base_rows)
+                    and base_rows[base_idx + 1].date <= current_date
+                ):
                     base_idx += 1
                     current_base = base_rows[base_idx]
 
@@ -278,7 +297,10 @@ class RatesService:
                     continue
 
                 converted = float(current_target.rate) / float(current_base.rate)
-                forward_filled = current_target.date < current_date or current_base.date < current_date
+                forward_filled = (
+                    current_target.date < current_date
+                    or current_base.date < current_date
+                )
 
             items.append(
                 {
