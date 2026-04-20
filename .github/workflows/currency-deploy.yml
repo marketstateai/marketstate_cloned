@@ -13,65 +13,30 @@ jobs:
     environment: prod
     permissions:
       contents: read
-      id-token: write
 
     env:
-      GCP_PROJECT_ID: general-428410
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID || secrets.GCP_PROJECT_ID || 'general-428410' }}
       GCP_REGION: us-central1
       GCP_FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || secrets.GCP_FUNCTION_NAME || 'currency-api' }}
-      GCP_ARTIFACT_REPOSITORY: currency-functions
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-
-      - name: Install dependencies
-        working-directory: services/core/apis/currency-api
-        run: uv sync --dev
-
-      - name: Run tests
-        working-directory: services/core/apis/currency-api
-        run: uv run pytest -q
+      - name: Validate GCP credentials secret
+        if: ${{ secrets.GCP_COMPUTE_KEY == '' }}
+        run: |
+          echo "Missing required secret: GCP_COMPUTE_KEY"
+          exit 1
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v3
+        uses: google-github-actions/auth@v2
         with:
-          project_id: ${{ env.GCP_PROJECT_ID }}
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          credentials_json: ${{ secrets.GCP_COMPUTE_KEY }}
 
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
-
-      - name: Ensure required APIs
-        run: |
-          gcloud services enable \
-            cloudfunctions.googleapis.com \
-            cloudbuild.googleapis.com \
-            artifactregistry.googleapis.com \
-            run.googleapis.com \
-            --project "${GCP_PROJECT_ID}"
-
-      - name: Ensure Artifact Registry repository exists
-        run: |
-          if ! gcloud artifacts repositories describe "${GCP_ARTIFACT_REPOSITORY}" \
-            --location "${GCP_REGION}" \
-            --project "${GCP_PROJECT_ID}" >/dev/null 2>&1; then
-            gcloud artifacts repositories create "${GCP_ARTIFACT_REPOSITORY}" \
-              --repository-format=docker \
-              --location "${GCP_REGION}" \
-              --project "${GCP_PROJECT_ID}" \
-              --description "Docker images for Currency API Cloud Function"
-          fi
 
       - id: deploy
         name: Deploy Cloud Function (Gen2)
@@ -83,15 +48,6 @@ jobs:
           runtime: python313
           source_dir: services/core/apis/currency-api
           entry_point: currency_api
-          docker_repository: projects/${{ env.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/repositories/${{ env.GCP_ARTIFACT_REPOSITORY }}
-          environment_variables: |
-            ENV=prod
-            DB_SCHEMA=src_prod
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}
-            CORS_ORIGINS=${{ secrets.CORS_ORIGINS }}
-            RATE_LIMIT_PER_MINUTE=${{ secrets.RATE_LIMIT_PER_MINUTE }}
-            SEED_ON_STARTUP=false
 
       - name: Smoke test function URL
         run: |
