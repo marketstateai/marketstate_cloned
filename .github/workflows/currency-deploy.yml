@@ -24,17 +24,17 @@ jobs:
 
       - name: Validate GCP credentials secret
         env:
-          GCP_COMPUTE_KEY: ${{ secrets.GCP_COMPUTE_KEY }}
+          GCP_AUTH_JSON: ${{ secrets.GCP_FUNCTION_SA || secrets.GCP_COMPUTE_KEY }}
         run: |
-          if [[ -z "${GCP_COMPUTE_KEY:-}" ]]; then
-            echo "Missing required secret: GCP_COMPUTE_KEY"
+          if [[ -z "${GCP_AUTH_JSON:-}" ]]; then
+            echo "Missing required secret: GCP_FUNCTION_SA (or fallback GCP_COMPUTE_KEY)"
             exit 1
           fi
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_COMPUTE_KEY }}
+          credentials_json: ${{ secrets.GCP_FUNCTION_SA || secrets.GCP_COMPUTE_KEY }}
 
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
