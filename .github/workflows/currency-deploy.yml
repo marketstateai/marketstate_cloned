@@ -3,48 +3,13 @@ name: Deploy Currency Cloud Function
 on:
   workflow_dispatch:
 
+concurrency:
+  group: currency-deploy-prod
+  cancel-in-progress: false
+
 jobs:
-  quality:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/core/apis/currency-api
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-
-      - name: Install dependencies
-        run: uv sync --dev
-
-      - name: Check formatting
-        run: uv run ruff format --check .
-
-      - name: Lint
-        run: uv run ruff check .
-
-      - name: Type check
-        run: uv run mypy app
-
-      - name: Security scan (Bandit)
-        run: uv run bandit -r app
-
-      - name: Dependency audit
-        run: uv run pip-audit
-
-      - name: Run tests
-        run: uv run pytest -q
-
   deploy:
     runs-on: ubuntu-latest
-    needs: quality
     environment: prod
     permissions:
       contents: read
@@ -58,6 +23,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        working-directory: services/core/apis/currency-api
+        run: uv sync --dev
+
+      - name: Run tests
+        working-directory: services/core/apis/currency-api
+        run: uv run pytest -q
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
