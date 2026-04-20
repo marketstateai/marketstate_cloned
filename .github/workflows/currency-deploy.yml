@@ -23,10 +23,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Validate GCP credentials secret
-        if: ${{ secrets.GCP_COMPUTE_KEY == '' }}
+        env:
+          GCP_COMPUTE_KEY: ${{ secrets.GCP_COMPUTE_KEY }}
         run: |
-          echo "Missing required secret: GCP_COMPUTE_KEY"
-          exit 1
+          if [[ -z "${GCP_COMPUTE_KEY:-}" ]]; then
+            echo "Missing required secret: GCP_COMPUTE_KEY"
+            exit 1
+          fi
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
