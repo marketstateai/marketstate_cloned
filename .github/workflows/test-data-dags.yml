@@ -1,13 +1,17 @@
-name: Unit Tests
+name: Test Data DAGs
 
-on: [pull_request]
+on:
+  pull_request:
+    paths:
+      - "data/**"
+      - ".github/workflows/test-data-dags.yml"
 
 jobs:
   pytest:
     runs-on: ubuntu-latest
     env:
-      AIRFLOW_HOME: ${{ github.workspace }}/.airflow
-      AIRFLOW__CORE__DAGS_FOLDER: ${{ github.workspace }}/dags
+      AIRFLOW_HOME: ${{ github.workspace }}/data/.airflow
+      AIRFLOW__CORE__DAGS_FOLDER: ${{ github.workspace }}/data/dags
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
       AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: "120"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////tmp/airflow.db
@@ -23,12 +27,13 @@ jobs:
           python-version: "3.11"
           cache: "pip"
           cache-dependency-path: |
-            requirements.txt
+            data/requirements.txt
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt pytest "apache-airflow==2.10.5"
+          pip install -r data/requirements.txt pytest "apache-airflow==2.10.5"
 
       - name: Run tests
-        run: pytest -q
+        working-directory: data
+        run: pytest -q tests/dags
