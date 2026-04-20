@@ -1,22 +1,22 @@
-name: Currency CI
+name: CI Currency API
 
 on:
   pull_request:
     paths:
-      - "apis/currency/**"
-      - ".github/workflows/currency-ci.yml"
+      - "services/core/apis/currency-api/**"
+      - ".github/workflows/ci-currency-api.yml"
   push:
-    branches: ["*"]
+    branches: ["main"]
     paths:
-      - "apis/currency/**"
-      - ".github/workflows/currency-ci.yml"
+      - "services/core/apis/currency-api/**"
+      - ".github/workflows/ci-currency-api.yml"
 
 jobs:
   quality:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apis/currency
+        working-directory: services/core/apis/currency-api
 
     steps:
       - uses: actions/checkout@v4
@@ -56,4 +56,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Docker build
-        run: docker build -t currency-api-ci apis/currency
+        run: docker build -t currency-api-ci services/core/apis/currency-api

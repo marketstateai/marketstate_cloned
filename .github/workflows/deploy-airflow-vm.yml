@@ -1,0 +1,444 @@
+name: Deploy Airflow VM
+
+on:
+  workflow_dispatch:
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    environment: prod
+
+    env:
+      GCP_PROJECT_ID: general-428410
+      GCP_ZONE: us-central1-a
+      VM_NAME: airflow
+      AIRFLOW_USER: ${{ secrets.AIRFLOW_USER }}
+      AIRFLOW_PASSWORD: ${{ secrets.AIRFLOW_PASSWORD }}
+      TARGET: ${{ vars.TARGET }}
+
+      STATIC_IP_AIRFLOW: ${{ vars.STATIC_IP_AIRFLOW || secrets.STATIC_IP_AIRFLOW }}
+      CERTBOT_EMAIL: ${{ vars.CERTBOT_EMAIL || secrets.CERTBOT_EMAIL }}
+      GOOGLE_SECRET_MANAGER_CREDENTIALS_B64: ${{ secrets.GOOGLE_SECRET_MANAGER_CREDENTIALS }}
+
+    steps:
+
+      # 1. CHECKOUT
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. AUTHENTICATE WITH GCP
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_COMPUTE_KEY }}
+
+      # 3. SETUP GCLOUD
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      # 3.1 VERIFY STATIC IP ENV VAR EXISTS
+      - name: Verify STATIC_IP_AIRFLOW is set
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${STATIC_IP_AIRFLOW:-}" ]]; then
+            echo "❌ STATIC_IP_AIRFLOW is not set."
+            exit 1
+          fi
+          echo "✅ STATIC_IP_AIRFLOW=${STATIC_IP_AIRFLOW}"
+
+      # 3.1.1 VERIFY CERTBOT EMAIL EXISTS
+      - name: Verify CERTBOT_EMAIL is set
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${CERTBOT_EMAIL:-}" ]]; then
+            echo "❌ CERTBOT_EMAIL is not set."
+            exit 1
+          fi
+          echo "✅ CERTBOT_EMAIL is set"
+
+      # 3.2 RELEASE STATIC IP FROM ANY EXISTING VM (SO IT CAN BE ATTACHED TO THE NEW ONE)
+      - name: Release Static IP from Any Existing VM
+        run: |
+          set -euo pipefail
+
+          echo "Looking for any instance currently using ${STATIC_IP_AIRFLOW}..."
+          MATCHES="$(gcloud compute instances list \
+            --project="${GCP_PROJECT_ID}" \
+            --format="value(name,zone,networkInterfaces[0].accessConfigs[0].natIP)" | awk -v ip="${STATIC_IP_AIRFLOW}" '$3==ip {print $1" "$2}')"
+
+          if [[ -z "${MATCHES}" ]]; then
+            echo "✅ No existing instance is using ${STATIC_IP_AIRFLOW}"
+            exit 0
+          fi
+
+          echo "⚠️ Found instance(s) using ${STATIC_IP_AIRFLOW}:"
+          echo "${MATCHES}"
+
+          while read -r NAME ZONE; do
+            [[ -z "${NAME}" ]] && continue
+            echo "Deleting instance ${NAME} in ${ZONE} to release static IP..."
+            gcloud compute instances delete "${NAME}" \
+              --project="${GCP_PROJECT_ID}" \
+              --zone="${ZONE}" \
+              --quiet
+          done <<< "${MATCHES}"
+
+      # 4. DEV MACHINE IP
+      - name: Set Dev Machine IP (Hardcoded)
+        id: ip
+        run: |
+          IP="86.27.171.45"
+          echo "ip=$IP" >> $GITHUB_OUTPUT
+
+      # 4.5 LOCK TO EXISTING VM
+      - name: Lock to Existing VM
+        run: |
+          echo "VM_NAME_DATE=${VM_NAME}" >> $GITHUB_ENV
+
+      # 5. VM SCHEDULE POLICY (always recreate)
+      - name: Recreate VM Schedule Policy
+        run: |
+          POLICY_NAME="$VM_NAME"
+
+          gcloud compute resource-policies delete "$POLICY_NAME" \
+            --project="$GCP_PROJECT_ID" \
+            --region=us-central1 \
+            --quiet || true
+
+          gcloud compute resource-policies create instance-schedule "$POLICY_NAME" \
+            --project="$GCP_PROJECT_ID" \
+            --region=us-central1 \
+            --timezone=UTC \
+            --vm-start-schedule="40 7 * * 1-5" \
+            --vm-stop-schedule="0 14 * * 1-5"
+
+          echo "✅ Recreated VM resource policy '$POLICY_NAME'"
+
+      # 6. FIREWALL RULES
+      - name: Create Firewall Rules
+        run: |
+          set -euo pipefail
+
+          SSH_SOURCE_RANGE="${{ steps.ip.outputs.ip }}/32"
+          PUBLIC_SOURCE_RANGE="0.0.0.0/0"
+          NETWORK_NAME="default"
+          VM_TAG="airflow-vm"
+
+          if ! gcloud compute firewall-rules describe "allow-airflow-http-public" --project="$GCP_PROJECT_ID" >/dev/null 2>&1; then
+            gcloud compute firewall-rules create "allow-airflow-http-public" \
+              --project="$GCP_PROJECT_ID" \
+              --network="$NETWORK_NAME" \
+              --allow="tcp:80" \
+              --direction=INGRESS \
+              --source-ranges="$PUBLIC_SOURCE_RANGE" \
+              --target-tags="$VM_TAG"
+          fi
+
+          if ! gcloud compute firewall-rules describe "allow-airflow-https" --project="$GCP_PROJECT_ID" >/dev/null 2>&1; then
+            gcloud compute firewall-rules create "allow-airflow-https" \
+              --project="$GCP_PROJECT_ID" \
+              --network="$NETWORK_NAME" \
+              --allow="tcp:443" \
+              --direction=INGRESS \
+              --source-ranges="$PUBLIC_SOURCE_RANGE" \
+              --target-tags="$VM_TAG"
+          fi
+
+          if ! gcloud compute firewall-rules describe "allow-airflow-ssh" --project="$GCP_PROJECT_ID" >/dev/null 2>&1; then
+            gcloud compute firewall-rules create "allow-airflow-ssh" \
+              --project="$GCP_PROJECT_ID" \
+              --network="$NETWORK_NAME" \
+              --allow="tcp:22" \
+              --direction=INGRESS \
+              --source-ranges="$SSH_SOURCE_RANGE" \
+              --target-tags="$VM_TAG"
+          fi
+
+      # 7. CREATE VM (ATTACH RESERVED STATIC IP VIA NETWORK-INTERFACE)
+      - name: Create Airflow VM
+        run: |
+          VM_NAME_DATE="$VM_NAME-$(date +%Y%m%d)"
+
+          gcloud compute instances create "$VM_NAME_DATE" \
+            --project="$GCP_PROJECT_ID" \
+            --zone="$GCP_ZONE" \
+            --machine-type=e2-standard-2 \
+            --image-family=ubuntu-2204-lts \
+            --image-project=ubuntu-os-cloud \
+            --boot-disk-size=30GB \
+            --scopes=https://www.googleapis.com/auth/cloud-platform \
+            --resource-policies="$VM_NAME" \
+            --tags=airflow-vm \
+            --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,address="$STATIC_IP_AIRFLOW" \
+            --metadata=TARGET="$TARGET"
+
+          echo "VM_NAME_DATE=$VM_NAME_DATE" >> $GITHUB_ENV
+
+      # 8. WAIT FOR SSH
+      - name: Wait for SSH
+        run: |
+          for i in {1..20}; do
+            if gcloud compute ssh "$VM_NAME_DATE" \
+              --zone="$GCP_ZONE" \
+              --command="echo ready" >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1
+
+      # 9. PERSIST TARGET ON THE VM
+      - name: Persist TARGET on VM
+        run: |
+          gcloud compute ssh "$VM_NAME_DATE" --zone="$GCP_ZONE" --quiet << 'EOF'
+          set -euo pipefail
+
+          META_VALUE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/attributes/TARGET" \
+            -H "Metadata-Flavor: Google")
+
+          sudo sed -i '/^TARGET=/d' /etc/environment
+          echo "TARGET=${META_VALUE}" | sudo tee -a /etc/environment
+          EOF
+
+      # 10. INSTALL DOCKER (SEPARATE FROM NGINX)
+      - name: Install Docker
+        run: |
+          gcloud compute ssh "$VM_NAME_DATE" --zone="$GCP_ZONE" --quiet << 'EOF'
+          set -euo pipefail
+
+          sudo apt update
+          sudo apt install -y ca-certificates curl gnupg lsb-release
+
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+          https://download.docker.com/linux/ubuntu \
+          $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+          sudo apt update
+          sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+          sudo usermod -aG docker $USER
+          sudo usermod -aG docker gabrielzenkner
+
+          sudo systemctl enable docker
+          sudo systemctl start docker
+          EOF
+
+      # 10.1 INSTALL NGINX (SEPARATE FROM DOCKER)
+      - name: Install NGINX
+        run: |
+          gcloud compute ssh "$VM_NAME_DATE" --zone="$GCP_ZONE" --quiet << 'EOF'
+          set -euo pipefail
+
+          sudo apt update
+          sudo apt install -y nginx apache2-utils
+
+          sudo systemctl enable nginx
+          sudo systemctl start nginx
+          EOF
+
+      # 11. INSTALL ASTRO (NO INIT)
+      - name: Install Astro
+        run: |
+          gcloud compute ssh "$VM_NAME_DATE" --zone="$GCP_ZONE" --quiet << 'EOF'
+          set -euo pipefail
+
+          curl -sSL https://install.astronomer.io | sudo bash
+
+          mkdir -p /home/$USER/airflow/marketstate
+          EOF
+
+      # 11.5 SYNC PROJECT FILES
+      - name: Sync Project Files to Airflow VM
+        run: |
+          gcloud compute scp --recurse dags src .astro .dbt "$VM_NAME_DATE:/home/$USER/airflow/marketstate" \
+            --zone="$GCP_ZONE" \
+            --project="$GCP_PROJECT_ID"
+
+          # NOTE: `airflow_settings.yaml` is intended for local development only; copying it to prod can
+          # cause Astro CLI to try to sync connections/variables via interactive exec (TTY), which
+          # fails in GitHub Actions non-interactive SSH sessions.
+          gcloud compute scp Dockerfile requirements.txt packages.txt docker-compose.override.yml "$VM_NAME_DATE:/home/$USER/airflow/marketstate" \
+            --zone="$GCP_ZONE" \
+            --project="$GCP_PROJECT_ID"
+
+      # 11.7 RESTART AIRFLOW
+      - name: Restart Airflow with Astro
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${GOOGLE_SECRET_MANAGER_CREDENTIALS_B64:-}" ]]; then
+            echo "❌ GOOGLE_SECRET_MANAGER_CREDENTIALS_B64 is not set."
+            exit 1
+          fi
+
+          gcloud compute ssh "$VM_NAME_DATE" \
+            --zone="$GCP_ZONE" \
+            --quiet \
+            --ssh-flag="-T" \
+            --command "env GOOGLE_SECRET_MANAGER_CREDENTIALS_B64='${GOOGLE_SECRET_MANAGER_CREDENTIALS_B64}' bash -s" << 'EOF'
+          set -euo pipefail
+
+          cd /home/$USER/airflow/marketstate
+
+          # Ensure local-dev-only config doesn't break non-interactive prod startup.
+          rm -f /home/$USER/airflow/marketstate/airflow_settings.yaml || true
+
+          mkdir -p /home/$USER/airflow/marketstate/.dbt
+          printf '%s' "${GOOGLE_SECRET_MANAGER_CREDENTIALS_B64}" | base64 -d > /home/$USER/airflow/marketstate/.dbt/gcp-secrets.json
+          sudo chgrp 0 /home/$USER/airflow/marketstate/.dbt/gcp-secrets.json
+          sudo chmod 640 /home/$USER/airflow/marketstate/.dbt/gcp-secrets.json
+
+          # Persist for manual astro commands after this SSH session
+          sudo sed -i '/^GOOGLE_SECRET_MANAGER_CREDENTIALS=/d' /etc/environment
+          echo "GOOGLE_SECRET_MANAGER_CREDENTIALS=/home/$USER/airflow/marketstate/.dbt/gcp-secrets.json" | sudo tee -a /etc/environment
+
+          # Load persisted env (TARGET, etc.) for this non-interactive shell.
+          if [[ -f /etc/environment ]]; then
+            set -a
+            . /etc/environment
+            set +a
+          fi
+
+          # Ensure compose has a host path for the secret file on the VM
+          export GOOGLE_SECRET_MANAGER_CREDENTIALS="/home/$USER/airflow/marketstate/.dbt/gcp-secrets.json"
+
+          # Run astro by absolute path to avoid PATH issues in non-interactive shells
+          /usr/local/bin/astro dev stop || true
+          /usr/local/bin/astro dev start --wait 5m
+          /usr/local/bin/astro dev ps
+          EOF
+
+      # 12. CONFIGURE NGINX (SAFE HEREDOC + PASS B64 VIA ENV)
+      - name: Configure NGINX
+        run: |
+          set -euo pipefail
+
+          AIRFLOW_USER_B64="$(printf '%s' "${AIRFLOW_USER}" | base64 -w0)"
+          AIRFLOW_PASSWORD_B64="$(printf '%s' "${AIRFLOW_PASSWORD}" | base64 -w0)"
+
+          gcloud compute ssh "$VM_NAME_DATE" \
+            --zone="$GCP_ZONE" \
+            --quiet \
+            --ssh-flag="-T" \
+            --command "sudo env AIRFLOW_USER_B64='${AIRFLOW_USER_B64}' AIRFLOW_PASSWORD_B64='${AIRFLOW_PASSWORD_B64}' bash -s" << 'EOF'
+          set -euo pipefail
+
+          AIRFLOW_USER="$(echo "${AIRFLOW_USER_B64}" | base64 -d)"
+          AIRFLOW_PASSWORD="$(echo "${AIRFLOW_PASSWORD_B64}" | base64 -d)"
+
+          sudo rm -f /etc/nginx/.htpasswd
+          printf '%s\n' "${AIRFLOW_PASSWORD}" | sudo htpasswd -cBi /etc/nginx/.htpasswd "${AIRFLOW_USER}"
+          sudo chmod 640 /etc/nginx/.htpasswd
+          sudo chown root:www-data /etc/nginx/.htpasswd
+
+          sudo tee /etc/nginx/sites-available/airflow > /dev/null << 'NGINX'
+          server {
+              listen 80;
+              server_name airflow.marketstate.ai;
+
+              auth_basic "Restricted Access";
+              auth_basic_user_file /etc/nginx/.htpasswd;
+
+              location / {
+                  proxy_pass http://127.0.0.1:8081;
+                  proxy_http_version 1.1;
+
+                  proxy_set_header Host $http_host;
+                  proxy_set_header X-Forwarded-Host $http_host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection "upgrade";
+
+                  proxy_redirect off;
+              }
+          }
+          NGINX
+
+          sudo rm -f /etc/nginx/sites-enabled/default
+          sudo ln -sf /etc/nginx/sites-available/airflow /etc/nginx/sites-enabled/airflow
+
+          sudo nginx -t
+          sudo systemctl reload nginx
+          EOF
+
+      # 12.1 ENABLE HTTPS WITH CERTBOT (NON-INTERACTIVE, EMAIL FROM ENV)
+      - name: Enable HTTPS (Certbot)
+        run: |
+          set -euo pipefail
+
+          CERTBOT_EMAIL_B64="$(printf '%s' "${CERTBOT_EMAIL}" | base64 -w0)"
+
+          gcloud compute ssh "$VM_NAME_DATE" \
+            --zone="$GCP_ZONE" \
+            --quiet \
+            --ssh-flag="-T" \
+            --command "sudo env CERTBOT_EMAIL_B64='${CERTBOT_EMAIL_B64}' bash -s" << 'EOF'
+          set -euo pipefail
+
+          CERTBOT_EMAIL="$(echo "${CERTBOT_EMAIL_B64}" | base64 -d)"
+
+          sudo apt update
+          sudo apt install -y certbot python3-certbot-nginx
+
+          sudo nginx -t
+          sudo systemctl reload nginx
+
+          if [[ ! -d "/etc/letsencrypt/live/airflow.marketstate.ai" ]]; then
+            sudo certbot --nginx \
+              -d airflow.marketstate.ai \
+              --redirect \
+              --non-interactive \
+              --agree-tos \
+              --no-eff-email \
+              -m "${CERTBOT_EMAIL}"
+          else
+            sudo certbot renew --quiet || true
+          fi
+
+          sudo nginx -t
+          sudo systemctl reload nginx
+          EOF
+
+      # 13. OUTPUT FINAL URL
+      - name: Output Airflow URL
+        run: |
+          IP=$(gcloud compute instances describe "$VM_NAME_DATE" \
+            --zone="$GCP_ZONE" \
+            --format="get(networkInterfaces[0].accessConfigs[0].natIP)")
+
+          echo "============================================"
+          echo "✅ VM READY"
+          echo "🌍 Airflow URL: https://airflow.marketstate.ai"
+          echo "📌 VM External IP (should match STATIC_IP_AIRFLOW): http://$IP"
+          echo "============================================"
+
+      # 14. CLEANUP OLD VMs
+      - name: Cleanup Old Airflow VMs
+        if: success()
+        run: |
+          PREFIX="$VM_NAME"
+          TODAY=$(date +%Y%m%d)
+
+          INSTANCES=$(gcloud compute instances list \
+            --project="$GCP_PROJECT_ID" \
+            --format="value(name,zone)" | grep "^${PREFIX}-" || true)
+
+          while read -r NAME ZONE; do
+            DATE_PART="${NAME##*-}"
+            if [[ "$DATE_PART" < "$TODAY" ]]; then
+              gcloud compute instances delete "$NAME" \
+                --zone="$ZONE" \
+                --project="$GCP_PROJECT_ID" \
+                --quiet
+            fi
+          done <<< "$INSTANCES"
