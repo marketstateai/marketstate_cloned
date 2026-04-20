@@ -12,13 +12,7 @@ variable "region" {
 variable "service_name" {
   description = "Cloud Run service name"
   type        = string
-  default     = "currency-api"
-}
-
-variable "artifact_repo_name" {
-  description = "Artifact Registry Docker repo name"
-  type        = string
-  default     = "currency-api-repo"
+  default     = "marketstate-currency-api"
 }
 
 variable "image_url" {
