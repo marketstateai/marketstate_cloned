@@ -1,4 +1,4 @@
-name: Deploy GCP Cloud Function
+name: Deploy Currency Cloud Function
 
 on:
   workflow_dispatch:
@@ -9,59 +9,101 @@ jobs:
     defaults:
       run:
         working-directory: services/core/apis/currency-api
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+
       - name: Install uv
         uses: astral-sh/setup-uv@v4
+
       - name: Install dependencies
         run: uv sync --dev
+
       - name: Check formatting
-        run: uvx ruff format --check .
+        run: uv run ruff format --check .
+
       - name: Lint
-        run: uvx ruff check .
+        run: uv run ruff check .
+
       - name: Type check
-        run: uv run --with mypy mypy app
+        run: uv run mypy app
+
       - name: Security scan (Bandit)
-        run: uvx bandit -r app
+        run: uv run bandit -r app
+
       - name: Dependency audit
-        run: uvx pip-audit
+        run: uv run pip-audit
+
       - name: Run tests
         run: uv run pytest -q
 
   deploy:
     runs-on: ubuntu-latest
     needs: quality
+    environment: prod
     permissions:
       contents: read
       id-token: write
+
+    env:
+      GCP_PROJECT_ID: general-428410
+      GCP_REGION: us-central1
+      GCP_FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || secrets.GCP_FUNCTION_NAME || 'currency-api' }}
+      GCP_ARTIFACT_REPOSITORY: currency-functions
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
-
-      - name: Deploy function
-        uses: google-github-actions/deploy-cloud-functions@v3
         with:
-          name: ${{ secrets.GCP_FUNCTION_NAME }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Ensure required APIs
+        run: |
+          gcloud services enable \
+            cloudfunctions.googleapis.com \
+            cloudbuild.googleapis.com \
+            artifactregistry.googleapis.com \
+            run.googleapis.com \
+            --project "${GCP_PROJECT_ID}"
+
+      - name: Ensure Artifact Registry repository exists
+        run: |
+          if ! gcloud artifacts repositories describe "${GCP_ARTIFACT_REPOSITORY}" \
+            --location "${GCP_REGION}" \
+            --project "${GCP_PROJECT_ID}" >/dev/null 2>&1; then
+            gcloud artifacts repositories create "${GCP_ARTIFACT_REPOSITORY}" \
+              --repository-format=docker \
+              --location "${GCP_REGION}" \
+              --project "${GCP_PROJECT_ID}" \
+              --description "Docker images for Currency API Cloud Function"
+          fi
+
+      - id: deploy
+        name: Deploy Cloud Function (Gen2)
+        uses: google-github-actions/deploy-cloud-functions@v4
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          name: ${{ env.GCP_FUNCTION_NAME }}
+          region: ${{ env.GCP_REGION }}
           runtime: python313
-          region: ${{ secrets.GCP_REGION }}
           source_dir: services/core/apis/currency-api
           entry_point: currency_api
-          trigger_http: true
-          allow_unauthenticated: true
-          env_vars: |
+          docker_repository: projects/${{ env.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/repositories/${{ env.GCP_ARTIFACT_REPOSITORY }}
+          environment_variables: |
             ENV=prod
             DB_SCHEMA=src_prod
             DATABASE_URL=${{ secrets.DATABASE_URL }}
@@ -70,13 +112,7 @@ jobs:
             RATE_LIMIT_PER_MINUTE=${{ secrets.RATE_LIMIT_PER_MINUTE }}
             SEED_ON_STARTUP=false
 
-      - name: Purge Cloudflare cache (optional)
-        env:
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        if: ${{ env.CLOUDFLARE_ZONE_ID != '' && env.CLOUDFLARE_API_TOKEN != '' }}
+      - name: Smoke test function URL
         run: |
-          curl -L -X POST "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
-          -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-          -H "Content-Type: application/json" \
-          --data '{"purge_everything":true}'
+          curl -fsSL "${{ steps.deploy.outputs.url }}" >/dev/null
+          echo "Deployed URL: ${{ steps.deploy.outputs.url }}"
