@@ -21,7 +21,7 @@
           </div>
         </div>
         <h2>Sign in</h2>
-        <p class="muted">
+        <p id="loginHint" class="muted">
           Temporary mock login for GitHub Pages. Any email/password works.
         </p>
         <form id="loginForm" class="form-grid">
@@ -119,7 +119,20 @@
           <article class="panel">
             <div class="section-title">
               <h2>Watchlist</h2>
+              <span id="dataSourceBadge" class="source-badge muted">Loading</span>
             </div>
+            <form id="watchlistForm" class="watchlist-form">
+              <input
+                id="watchlistSymbolInput"
+                type="text"
+                placeholder="Symbol (e.g. AMZN)"
+                maxlength="10"
+              />
+              <input id="watchlistPriceInput" type="number" step="0.01" placeholder="Price" />
+              <input id="watchlistChangeInput" type="number" step="0.01" placeholder="Change %" />
+              <button id="watchlistSaveButton" type="submit">Save</button>
+            </form>
+            <p id="watchlistMessage" class="muted form-message"></p>
             <ul id="watchlist" class="watchlist"></ul>
           </article>
           <article class="panel">
@@ -141,6 +154,9 @@
       </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
+    <script src="./supabase-client.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

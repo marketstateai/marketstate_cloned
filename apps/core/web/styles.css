@@ -225,7 +225,63 @@ button:hover {
 }
 
 .section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
   margin-bottom: 0.7rem;
+}
+
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+}
+
+.source-badge.live {
+  color: var(--good);
+  border-color: rgba(67, 189, 169, 0.45);
+}
+
+.source-badge.mock {
+  color: #f0bb67;
+  border-color: rgba(240, 187, 103, 0.45);
+}
+
+.watchlist-form {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr auto;
+  gap: 0.55rem;
+  margin-bottom: 0.6rem;
+}
+
+.watchlist-form input {
+  padding: 0.55rem 0.65rem;
+  font-size: 0.92rem;
+}
+
+.watchlist-form button {
+  padding: 0.6rem 0.85rem;
+}
+
+.form-message {
+  min-height: 1.2rem;
+  margin-bottom: 0.55rem;
+  font-size: 0.86rem;
+}
+
+.form-message.error {
+  color: var(--bad);
+}
+
+.form-message.success {
+  color: var(--good);
 }
 
 .table-wrap {
@@ -329,5 +385,9 @@ td {
   .app-footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .watchlist-form {
+    grid-template-columns: 1fr;
   }
 }
