@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MarketState Portal</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="loginView" class="panel login-panel">
+        <div class="brand-row">
+          <img
+            class="brand-logo"
+            src="https://marketstate.ai/wp-content/uploads/2024/11/standard_logo-e1748171199851.webp"
+            alt="MarketState"
+          />
+          <div>
+            <h1>MarketState</h1>
+            <p class="muted">Investor portal</p>
+          </div>
+        </div>
+        <h2>Sign in</h2>
+        <p class="muted">
+          Temporary mock login for GitHub Pages. Any email/password works.
+        </p>
+        <form id="loginForm" class="form-grid">
+          <label>
+            Email
+            <input
+              id="emailInput"
+              type="text"
+              placeholder="you@marketstate.ai"
+              autocomplete="username"
+            />
+          </label>
+          <label>
+            Password
+            <input
+              id="passwordInput"
+              type="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+            />
+          </label>
+          <button id="loginButton" type="submit">Log in</button>
+          <button id="demoLoginButton" type="button" class="secondary-btn">
+            Continue with demo account
+          </button>
+        </form>
+      </section>
+
+      <section id="dashboardView" class="dashboard hidden" aria-live="polite">
+        <header class="topbar panel">
+          <div class="topbar-brand">
+            <img
+              class="brand-logo"
+              src="https://marketstate.ai/wp-content/uploads/2024/11/standard_logo-e1748171199851.webp"
+              alt="MarketState"
+            />
+            <h1>MarketState Portal</h1>
+          </div>
+          <nav class="topbar-nav" aria-label="Main navigation">
+            <a href="https://marketstate.ai/companies/" target="_blank" rel="noreferrer">Screener</a>
+            <a href="https://marketstate.ai/market-segments/" target="_blank" rel="noreferrer"
+              >Market Research</a
+            >
+            <a href="https://marketstate.ai/industries/" target="_blank" rel="noreferrer"
+              >Stock Categories</a
+            >
+            <a href="https://marketstate.ai/about/" target="_blank" rel="noreferrer">About</a>
+          </nav>
+          <div class="topbar-meta">
+            <p class="muted">Welcome back, <span id="userEmail"></span></p>
+            <button id="logoutButton" class="secondary-btn" type="button">Log out</button>
+          </div>
+        </header>
+
+        <section class="cards-grid">
+          <article class="panel stat-card">
+            <p class="label">Portfolio Value</p>
+            <p id="portfolioValue" class="value"></p>
+            <p id="portfolioDelta" class="delta"></p>
+          </article>
+          <article class="panel stat-card">
+            <p class="label">Cash Balance</p>
+            <p id="cashBalance" class="value"></p>
+            <p class="muted">Available for trade</p>
+          </article>
+          <article class="panel stat-card">
+            <p class="label">Day P&L</p>
+            <p id="dayPnl" class="value"></p>
+            <p class="muted">Unrealized</p>
+          </article>
+        </section>
+
+        <section class="panel">
+          <div class="section-title">
+            <h2>Holdings</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Symbol</th>
+                  <th>Name</th>
+                  <th>Qty</th>
+                  <th>Price</th>
+                  <th>Change</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody id="holdingsTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="split-grid">
+          <article class="panel">
+            <div class="section-title">
+              <h2>Watchlist</h2>
+            </div>
+            <ul id="watchlist" class="watchlist"></ul>
+          </article>
+          <article class="panel">
+            <div class="section-title">
+              <h2>Recent Activity</h2>
+            </div>
+            <ul id="activityList" class="activity-list"></ul>
+          </article>
+        </section>
+
+        <footer class="panel app-footer">
+          <div class="footer-links">
+            <a href="https://marketstate.ai/imprint/" target="_blank" rel="noreferrer">Disclaimer</a>
+            <a href="https://marketstate.ai/imprint/" target="_blank" rel="noreferrer">Imprint</a>
+            <a href="https://marketstate.ai/contact/" target="_blank" rel="noreferrer">Contact</a>
+          </div>
+          <p class="muted">© 2025 All rights Reserved.</p>
+        </footer>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
