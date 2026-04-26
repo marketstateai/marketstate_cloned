@@ -1,8 +1,12 @@
-# Supabase
-.branches
-.temp
-
-# dotenvx
-.env.keys
-.env.local
-.env.*.local
+ marketstate-portal git:(main) ✗ npm run build && npm run dev
+npm error code ENOENT
+npm error syscall open
+npm error path /Users/gabrielzenkner/projects/marketstate-portal/package.json
+npm error errno -2
+npm error enoent Could not read package.json: Error: ENOENT: no such file or directory, open '/Users/gabrielzenkner/projects/marketstate-portal/package.json'
+npm error enoent This is related to npm not being able to find a file.
+npm error enoent
+npm error A complete log of this run can be found in: /Users/gabrielzenkner/.npm/_logs/2026-04-26T15_45_00_278Z-debug-0.log
+➜  marketstate-portal git:(main) ✗ pwd
+/Users/gabrielzenkner/projects/marketstate-portal
+➜  marketstate-portal git:(main) ✗ 

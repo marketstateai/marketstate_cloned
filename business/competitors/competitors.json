@@ -1,217 +1,217 @@
 [
-  {
-    "name": "Kubera",
-    "website": "https://www.kubera.com/",
-    "category": "net worth and portfolio aggregation",
-    "description": "Kubera is a wealth and net-worth tracking platform that aggregates financial accounts and lets users track traditional investments, cash, real estate, crypto, private assets, liabilities, and estate documents in one place. It is positioned more as a wealth command center than a brokerage.",
-    "aimed_at": [
-      "high-net-worth individuals",
-      "households with multiple asset types",
-      "investors tracking public and private assets",
-      "users who want a consolidated wealth dashboard"
-    ],
-    "founded_year": null,
-    "employees_estimate": null,
-    "customers_or_users": null,
-    "customer_notes": "Official site and help content confirm customer usage and peer benchmark features based on aggregated customer balance sheets, but no public customer count was found in the reviewed sources.",
-    "notes": "Tracks net worth across accounts and supports collaboration, documents, and peer-style benchmark comparisons.",
-    "data_confidence": "medium"
-  },
-  {
-    "name": "Sharesight",
-    "website": "https://www.sharesight.com/",
-    "category": "portfolio tracking and performance reporting",
-    "description": "Sharesight is a portfolio tracker focused on historical investment performance, dividend tracking, tax reporting, and corporate action adjustments. It is designed to show true portfolio returns over time rather than just balances.",
-    "aimed_at": [
-      "self-directed investors",
-      "dividend investors",
-      "users managing taxable portfolios",
-      "financial professionals monitoring client portfolios"
-    ],
-    "founded_year": 2007,
-    "employees_estimate": null,
-    "customers_or_users": "500,000+",
-    "customer_notes": "LinkedIn snippet says it is used by over 500,000 DIY investors and finance professionals worldwide.",
-    "notes": "Strong direct competitor for historical portfolio tracking, dividend/corporate action handling, and tax/performance reporting.",
-    "data_confidence": "high"
-  },
-  {
-    "name": "Monarch Money",
-    "website": "https://www.monarch.com/",
-    "category": "personal finance hub with investment tracking",
-    "description": "Monarch is a personal finance platform that combines account aggregation, budgeting, planning, net-worth tracking, and investment visibility in one app. It is broader than a pure investment tracker and is positioned as an all-in-one money management system.",
-    "aimed_at": [
-      "individuals managing all household finances",
-      "couples and families",
-      "users migrating from Mint-style products",
-      "people wanting budgeting plus investment visibility"
-    ],
-    "founded_year": 2020,
-    "employees_estimate": "51-200",
-    "customers_or_users": "1,000,000+ members",
-    "customer_notes": "Official homepage says Monarch is trusted by over 1,000,000 members.",
-    "notes": "Broader money-management product than a pure investing app, but competes on unified account aggregation, net worth tracking, and forward planning.",
-    "data_confidence": "high"
-  },
-  {
-    "name": "Mezzi",
-    "website": "https://www.mezzi.com/",
-    "category": "AI wealth management and investment aggregation",
-    "description": "Mezzi is an AI-powered wealth management platform that aggregates investment accounts and provides portfolio analysis, tax-aware guidance, fee reduction insights, and fiduciary-style recommendations. It blends account consolidation with AI-based portfolio support.",
-    "aimed_at": [
-      "self-directed investors with multiple accounts",
-      "higher-balance households",
-      "users wanting AI guidance on investments and taxes",
-      "investors seeking a digital family-office-like experience"
-    ],
-    "founded_year": 2020,
-    "employees_estimate": null,
-    "customers_or_users": null,
-    "customer_notes": "Official site includes testimonials and describes the product as an SEC-registered AI advisor, but no public customer count was found in the reviewed sources.",
-    "notes": "Very close competitor on the 'investment command center + guidance + AI research' angle.",
-    "data_confidence": "medium"
-  },
-  {
-    "name": "Origin",
-    "website": "https://useorigin.com/",
-    "category": "all-in-one financial platform with AI advisor",
-    "description": "Origin is a financial platform that combines spending, saving, investment visibility, planning, and AI-based financial guidance. It has roots in workplace financial wellness and is increasingly positioning itself as an AI financial advisor using the user's own connected financial data.",
-    "aimed_at": [
-      "employees using workplace financial wellness benefits",
-      "individual consumers seeking all-in-one money management",
-      "users wanting AI-based financial guidance",
-      "people who want planning plus investment context"
-    ],
-    "founded_year": 2018,
-    "employees_estimate": "51-200",
-    "customers_or_users": null,
-    "customer_notes": "Origin serves both individuals and employers; reviewed sources described member support and enterprise use cases but did not surface a verified public member count.",
-    "notes": "Competes on unified financial dashboarding, planning, and AI-guided recommendations.",
-    "data_confidence": "high"
-  },
-  {
-    "name": "Quicken",
-    "website": "https://www.quicken.com/",
-    "category": "personal finance and investment tracking software",
-    "description": "Quicken is a long-established personal finance software product that supports account aggregation, budgeting, bill tracking, and investment tracking. It is broader and older than modern portfolio intelligence tools, but it still competes as a consolidated financial record system.",
-    "aimed_at": [
-      "long-time personal finance software users",
-      "households wanting detailed money tracking",
-      "users who value historical financial records",
-      "investors who want investments tracked alongside bills and budgets"
-    ],
-    "founded_year": 1983,
-    "employees_estimate": null,
-    "customers_or_users": null,
-    "customer_notes": "Reviewed sources confirm longstanding customer base and product breadth, but no current verified customer count was captured in the reviewed sources.",
-    "notes": "Incumbent competitor; broader and older than your concept, but relevant for historical account aggregation and performance tracking.",
-    "data_confidence": "medium"
-  },
-  {
-    "name": "Ziggma",
-    "website": "https://ziggma.com/",
-    "category": "portfolio tracking and investment analysis",
-    "description": "Ziggma is a portfolio tracking and investment analysis platform that aggregates brokerage accounts and helps users evaluate return, risk, diversification, income, and portfolio quality. It also emphasizes value-aligned and impact-aware investing.",
-    "aimed_at": [
-      "self-directed investors",
-      "users with multiple broker accounts",
-      "investors seeking portfolio analytics and optimization",
-      "people interested in values-based investing overlays"
-    ],
-    "founded_year": 2023,
-    "employees_estimate": "2-10",
-    "customers_or_users": null,
-    "customer_notes": "Official and LinkedIn snippets describe broad broker coverage and client use, but no public customer count was found in the reviewed sources.",
-    "notes": "Relevant for self-directed investors who want account aggregation, analytics, and optimization.",
-    "data_confidence": "high"
-  },
-  {
-    "name": "Wealthfront",
-    "website": "https://www.wealthfront.com/",
-    "category": "digital wealth management and investing",
-    "description": "Wealthfront is a digital wealth management platform centered on automated investing, cash management, tax-aware strategies, and goal-based financial planning. It is less of a neutral aggregation hub and more of a managed investing platform.",
-    "aimed_at": [
-      "hands-off investors",
-      "mass-affluent consumers",
-      "younger professionals building wealth",
-      "users seeking automated portfolio management"
-    ],
-    "founded_year": 2008,
-    "employees_estimate": 330,
-    "customers_or_users": "1.3 million+ clients",
-    "customer_notes": "Wikipedia snippet cites more than 1.3 million clients and 330 employees as of 2025.",
-    "notes": "More of a robo-advisor than a neutral portfolio intelligence layer, but still a strong adjacent competitor.",
-    "data_confidence": "high"
-  },
-  {
-    "name": "Betterment",
-    "website": "https://www.betterment.com/",
-    "category": "digital investing and wealth platform",
-    "description": "Betterment is a digital investing platform focused on automated portfolios, retirement accounts, cash products, and goal-based investing. It competes more on managed investing and financial guidance than on deep external portfolio intelligence.",
-    "aimed_at": [
-      "beginner investors",
-      "users wanting low-friction automated investing",
-      "retirement-focused savers",
-      "people seeking simple digital wealth management"
-    ],
-    "founded_year": 2008,
-    "employees_estimate": null,
-    "customers_or_users": "1 million+ customers",
-    "customer_notes": "Official about page says Betterment has 1 Million+ customers and $65 Billion+ AUM.",
-    "notes": "Adjacent competitor; stronger on managed investing than deep portfolio intelligence across external holdings.",
-    "data_confidence": "high"
-  },
-  {
-    "name": "M1",
-    "website": "https://www.m1.com/",
-    "category": "investing platform with portfolio automation",
-    "description": "M1 combines investing, portfolio automation, and personal finance features into a product built around customizable portfolio 'pies' and automated rebalancing. It is a portfolio-building platform rather than a pure neutral aggregator.",
-    "aimed_at": [
-      "self-directed investors who want automation",
-      "users comfortable designing custom portfolios",
-      "long-term investors",
-      "people combining brokerage and cash management features"
-    ],
-    "founded_year": 2016,
-    "employees_estimate": 300,
-    "customers_or_users": "1,000,000+ members",
-    "customer_notes": "Wikipedia snippet reports 1,000,000+ members and 300 employees (employee figure dated 2021 in the snippet).",
-    "notes": "Adjacent competitor; combines brokerage, automation, and portfolio management rather than purely acting as a neutral aggregation layer.",
-    "data_confidence": "medium"
-  },
-  {
-    "name": "InvestEngine",
-    "website": "https://investengine.com/",
-    "category": "ETF investing platform",
-    "description": "InvestEngine is an ETF investing platform that offers managed and DIY ETF portfolios. It is more focused on low-cost investing execution and portfolio building than on deep multi-source investment aggregation.",
-    "aimed_at": [
-      "ETF investors",
-      "cost-conscious long-term investors",
-      "UK-based retail investors",
-      "users wanting managed or DIY ETF portfolios"
-    ],
-    "founded_year": 2016,
-    "employees_estimate": 150,
-    "customers_or_users": null,
-    "customer_notes": "Career page says the company was founded in 2016 and has 150 co-workers; no verified public customer count was captured in the reviewed sources.",
-    "notes": "More investment platform than aggregator, but relevant as an adjacent competitor in portfolio building and ongoing investing workflows.",
-    "data_confidence": "high"
-  },
-  {
-    "name": "Fidelity Full View",
-    "website": "https://www.fidelity.com/go/full-view",
-    "category": "account aggregation inside brokerage ecosystem",
-    "description": "Fidelity Full View is Fidelity's account aggregation and financial overview tool, letting users consolidate external accounts, spending, and holdings within Fidelity's ecosystem. It is a feature competitor rather than a standalone startup competitor.",
-    "aimed_at": [
-      "existing Fidelity customers",
-      "investors who want external accounts visible inside one brokerage portal",
-      "users seeking a free consolidated financial overview"
-    ],
-    "founded_year": null,
-    "employees_estimate": null,
-    "customers_or_users": null,
-    "customer_notes": "Reviewed sources confirm it is an account aggregation service made available to Fidelity customers at no additional charge; no standalone customer count surfaced.",
-    "notes": "Important incumbent feature competitor because it gives users a consolidated cross-account view within a large brokerage ecosystem.",
-    "data_confidence": "medium"
-  }
+    {
+        "name": "Kubera",
+        "website": "https://www.kubera.com/",
+        "category": "net worth and portfolio aggregation",
+        "description": "Kubera is a wealth and net-worth tracking platform that aggregates financial accounts and lets users track traditional investments, cash, real estate, crypto, private assets, liabilities, and estate documents in one place. It is positioned more as a wealth command center than a brokerage.",
+        "aimed_at": [
+            "high-net-worth individuals",
+            "households with multiple asset types",
+            "investors tracking public and private assets",
+            "users who want a consolidated wealth dashboard"
+        ],
+        "founded_year": null,
+        "employees_estimate": null,
+        "customers_or_users": null,
+        "customer_notes": "Official site and help content confirm customer usage and peer benchmark features based on aggregated customer balance sheets, but no public customer count was found in the reviewed sources.",
+        "notes": "Tracks net worth across accounts and supports collaboration, documents, and peer-style benchmark comparisons.",
+        "data_confidence": "medium"
+    },
+    {
+        "name": "Sharesight",
+        "website": "https://www.sharesight.com/",
+        "category": "portfolio tracking and performance reporting",
+        "description": "Sharesight is a portfolio tracker focused on historical investment performance, dividend tracking, tax reporting, and corporate action adjustments. It is designed to show true portfolio returns over time rather than just balances.",
+        "aimed_at": [
+            "self-directed investors",
+            "dividend investors",
+            "users managing taxable portfolios",
+            "financial professionals monitoring client portfolios"
+        ],
+        "founded_year": 2007,
+        "employees_estimate": null,
+        "customers_or_users": "500,000+",
+        "customer_notes": "LinkedIn snippet says it is used by over 500,000 DIY investors and finance professionals worldwide.",
+        "notes": "Strong direct competitor for historical portfolio tracking, dividend/corporate action handling, and tax/performance reporting.",
+        "data_confidence": "high"
+    },
+    {
+        "name": "Monarch Money",
+        "website": "https://www.monarch.com/",
+        "category": "personal finance hub with investment tracking",
+        "description": "Monarch is a personal finance platform that combines account aggregation, budgeting, planning, net-worth tracking, and investment visibility in one app. It is broader than a pure investment tracker and is positioned as an all-in-one money management system.",
+        "aimed_at": [
+            "individuals managing all household finances",
+            "couples and families",
+            "users migrating from Mint-style products",
+            "people wanting budgeting plus investment visibility"
+        ],
+        "founded_year": 2020,
+        "employees_estimate": "51-200",
+        "customers_or_users": "1,000,000+ members",
+        "customer_notes": "Official homepage says Monarch is trusted by over 1,000,000 members.",
+        "notes": "Broader money-management product than a pure investing app, but competes on unified account aggregation, net worth tracking, and forward planning.",
+        "data_confidence": "high"
+    },
+    {
+        "name": "Mezzi",
+        "website": "https://www.mezzi.com/",
+        "category": "AI wealth management and investment aggregation",
+        "description": "Mezzi is an AI-powered wealth management platform that aggregates investment accounts and provides portfolio analysis, tax-aware guidance, fee reduction insights, and fiduciary-style recommendations. It blends account consolidation with AI-based portfolio support.",
+        "aimed_at": [
+            "self-directed investors with multiple accounts",
+            "higher-balance households",
+            "users wanting AI guidance on investments and taxes",
+            "investors seeking a digital family-office-like experience"
+        ],
+        "founded_year": 2020,
+        "employees_estimate": null,
+        "customers_or_users": null,
+        "customer_notes": "Official site includes testimonials and describes the product as an SEC-registered AI advisor, but no public customer count was found in the reviewed sources.",
+        "notes": "Very close competitor on the 'investment command center + guidance + AI research' angle.",
+        "data_confidence": "medium"
+    },
+    {
+        "name": "Origin",
+        "website": "https://useorigin.com/",
+        "category": "all-in-one financial platform with AI advisor",
+        "description": "Origin is a financial platform that combines spending, saving, investment visibility, planning, and AI-based financial guidance. It has roots in workplace financial wellness and is increasingly positioning itself as an AI financial advisor using the user's own connected financial data.",
+        "aimed_at": [
+            "employees using workplace financial wellness benefits",
+            "individual consumers seeking all-in-one money management",
+            "users wanting AI-based financial guidance",
+            "people who want planning plus investment context"
+        ],
+        "founded_year": 2018,
+        "employees_estimate": "51-200",
+        "customers_or_users": null,
+        "customer_notes": "Origin serves both individuals and employers; reviewed sources described member support and enterprise use cases but did not surface a verified public member count.",
+        "notes": "Competes on unified financial dashboarding, planning, and AI-guided recommendations.",
+        "data_confidence": "high"
+    },
+    {
+        "name": "Quicken",
+        "website": "https://www.quicken.com/",
+        "category": "personal finance and investment tracking software",
+        "description": "Quicken is a long-established personal finance software product that supports account aggregation, budgeting, bill tracking, and investment tracking. It is broader and older than modern portfolio intelligence tools, but it still competes as a consolidated financial record system.",
+        "aimed_at": [
+            "long-time personal finance software users",
+            "households wanting detailed money tracking",
+            "users who value historical financial records",
+            "investors who want investments tracked alongside bills and budgets"
+        ],
+        "founded_year": 1983,
+        "employees_estimate": null,
+        "customers_or_users": null,
+        "customer_notes": "Reviewed sources confirm longstanding customer base and product breadth, but no current verified customer count was captured in the reviewed sources.",
+        "notes": "Incumbent competitor; broader and older than your concept, but relevant for historical account aggregation and performance tracking.",
+        "data_confidence": "medium"
+    },
+    {
+        "name": "Ziggma",
+        "website": "https://ziggma.com/",
+        "category": "portfolio tracking and investment analysis",
+        "description": "Ziggma is a portfolio tracking and investment analysis platform that aggregates brokerage accounts and helps users evaluate return, risk, diversification, income, and portfolio quality. It also emphasizes value-aligned and impact-aware investing.",
+        "aimed_at": [
+            "self-directed investors",
+            "users with multiple broker accounts",
+            "investors seeking portfolio analytics and optimization",
+            "people interested in values-based investing overlays"
+        ],
+        "founded_year": 2023,
+        "employees_estimate": "2-10",
+        "customers_or_users": null,
+        "customer_notes": "Official and LinkedIn snippets describe broad broker coverage and client use, but no public customer count was found in the reviewed sources.",
+        "notes": "Relevant for self-directed investors who want account aggregation, analytics, and optimization.",
+        "data_confidence": "high"
+    },
+    {
+        "name": "Wealthfront",
+        "website": "https://www.wealthfront.com/",
+        "category": "digital wealth management and investing",
+        "description": "Wealthfront is a digital wealth management platform centered on automated investing, cash management, tax-aware strategies, and goal-based financial planning. It is less of a neutral aggregation hub and more of a managed investing platform.",
+        "aimed_at": [
+            "hands-off investors",
+            "mass-affluent consumers",
+            "younger professionals building wealth",
+            "users seeking automated portfolio management"
+        ],
+        "founded_year": 2008,
+        "employees_estimate": 330,
+        "customers_or_users": "1.3 million+ clients",
+        "customer_notes": "Wikipedia snippet cites more than 1.3 million clients and 330 employees as of 2025.",
+        "notes": "More of a robo-advisor than a neutral portfolio intelligence layer, but still a strong adjacent competitor.",
+        "data_confidence": "high"
+    },
+    {
+        "name": "Betterment",
+        "website": "https://www.betterment.com/",
+        "category": "digital investing and wealth platform",
+        "description": "Betterment is a digital investing platform focused on automated portfolios, retirement accounts, cash products, and goal-based investing. It competes more on managed investing and financial guidance than on deep external portfolio intelligence.",
+        "aimed_at": [
+            "beginner investors",
+            "users wanting low-friction automated investing",
+            "retirement-focused savers",
+            "people seeking simple digital wealth management"
+        ],
+        "founded_year": 2008,
+        "employees_estimate": null,
+        "customers_or_users": "1 million+ customers",
+        "customer_notes": "Official about page says Betterment has 1 Million+ customers and $65 Billion+ AUM.",
+        "notes": "Adjacent competitor; stronger on managed investing than deep portfolio intelligence across external holdings.",
+        "data_confidence": "high"
+    },
+    {
+        "name": "M1",
+        "website": "https://www.m1.com/",
+        "category": "investing platform with portfolio automation",
+        "description": "M1 combines investing, portfolio automation, and personal finance features into a product built around customizable portfolio 'pies' and automated rebalancing. It is a portfolio-building platform rather than a pure neutral aggregator.",
+        "aimed_at": [
+            "self-directed investors who want automation",
+            "users comfortable designing custom portfolios",
+            "long-term investors",
+            "people combining brokerage and cash management features"
+        ],
+        "founded_year": 2016,
+        "employees_estimate": 300,
+        "customers_or_users": "1,000,000+ members",
+        "customer_notes": "Wikipedia snippet reports 1,000,000+ members and 300 employees (employee figure dated 2021 in the snippet).",
+        "notes": "Adjacent competitor; combines brokerage, automation, and portfolio management rather than purely acting as a neutral aggregation layer.",
+        "data_confidence": "medium"
+    },
+    {
+        "name": "InvestEngine",
+        "website": "https://investengine.com/",
+        "category": "ETF investing platform",
+        "description": "InvestEngine is an ETF investing platform that offers managed and DIY ETF portfolios. It is more focused on low-cost investing execution and portfolio building than on deep multi-source investment aggregation.",
+        "aimed_at": [
+            "ETF investors",
+            "cost-conscious long-term investors",
+            "UK-based retail investors",
+            "users wanting managed or DIY ETF portfolios"
+        ],
+        "founded_year": 2016,
+        "employees_estimate": 150,
+        "customers_or_users": null,
+        "customer_notes": "Career page says the company was founded in 2016 and has 150 co-workers; no verified public customer count was captured in the reviewed sources.",
+        "notes": "More investment platform than aggregator, but relevant as an adjacent competitor in portfolio building and ongoing investing workflows.",
+        "data_confidence": "high"
+    },
+    {
+        "name": "Fidelity Full View",
+        "website": "https://www.fidelity.com/go/full-view",
+        "category": "account aggregation inside brokerage ecosystem",
+        "description": "Fidelity Full View is Fidelity's account aggregation and financial overview tool, letting users consolidate external accounts, spending, and holdings within Fidelity's ecosystem. It is a feature competitor rather than a standalone startup competitor.",
+        "aimed_at": [
+            "existing Fidelity customers",
+            "investors who want external accounts visible inside one brokerage portal",
+            "users seeking a free consolidated financial overview"
+        ],
+        "founded_year": null,
+        "employees_estimate": null,
+        "customers_or_users": null,
+        "customer_notes": "Reviewed sources confirm it is an account aggregation service made available to Fidelity customers at no additional charge; no standalone customer count surfaced.",
+        "notes": "Important incumbent feature competitor because it gives users a consolidated cross-account view within a large brokerage ecosystem.",
+        "data_confidence": "medium"
+    }
 ]

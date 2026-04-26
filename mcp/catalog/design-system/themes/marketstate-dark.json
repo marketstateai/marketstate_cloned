@@ -2,6 +2,11 @@
   "name": "marketstate-dark",
   "display_name": "MarketState Dark",
   "description": "Primary dark theme derived from the current MarketState website and portal aesthetic.",
+  "design_rules": [
+    "Do not use gradients in MarketState product UI.",
+    "Prefer flat fills, borders, spacing, and typography contrast over decorative effects.",
+    "Charts should use solid series colors instead of gradient strokes."
+  ],
   "tokens": {
     "colors": {
       "bg": "#141414",
@@ -60,10 +65,7 @@
         "#B8CBE2",
         "#FBC02D"
       ],
-      "trend_gradient": [
-        "#8BE0F3",
-        "#FFD580"
-      ],
+      "trend_line": "#8BE0F3",
       "area_fill": "rgba(139, 224, 243, 0.10)",
       "grid_line": "rgba(184, 203, 226, 0.08)",
       "axis_line": "rgba(184, 203, 226, 0.18)"

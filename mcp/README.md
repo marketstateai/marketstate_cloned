@@ -19,6 +19,11 @@ Use this server as the place to expose:
 
 - `catalog/design-system`: theme tokens, component specs, page recipes, and asset metadata
 
+Current design direction:
+
+- no gradients in MarketState product UI
+- prefer flat surfaces and solid chart strokes
+
 ## Structure
 
 - `server.py`: dependency-free stdio MCP server
