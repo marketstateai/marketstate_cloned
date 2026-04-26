@@ -2,6 +2,9 @@
 
 FastAPI service for currency conversion using USD-baseline historical data.
 
+This service also owns the exchange-rates Edge Function source at
+`services/core/apis/currency-api/functions/exchange-rates`.
+
 Reference base project:
 - https://github.com/ArjanCodes/examples/tree/main/2025/project
 
@@ -36,6 +39,12 @@ All API endpoints require a plain API token header: `x-api-token`.
 uv run pytest -q
 uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
+
+Supabase adapter note:
+
+- The Supabase CLI still expects a repo-local `supabase/` directory.
+- That path is now treated as an adapter shell only.
+- The canonical function source lives in this service folder.
 
 Docs:
 - `http://localhost:8000/docs`

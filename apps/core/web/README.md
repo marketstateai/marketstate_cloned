@@ -29,7 +29,7 @@ Then open `http://localhost:4173`.
 - If email profile is missing, it falls back to `demo@marketstate.ai`.
 - Watchlist save form upserts into `public.ms_watchlist` with `onConflict: user_id,symbol`.
 - If Supabase is unavailable, UI falls back to local mock data and shows a badge.
-- Backend SQL bootstrap for this flow is under `backend/supabase/sql`.
+- Backend SQL bootstrap for this flow is under `services/core/portfolio/sql` and `services/core/watchlists/scripts`.
 
 ## GitHub Pages Deployment
 
