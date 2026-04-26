@@ -1,0 +1,72 @@
+{
+  "name": "marketstate-dark",
+  "display_name": "MarketState Dark",
+  "description": "Primary dark theme derived from the current MarketState website and portal aesthetic.",
+  "tokens": {
+    "colors": {
+      "bg": "#141414",
+      "surface": "#1F1F21",
+      "surface_2": "#1E1E1E",
+      "surface_3": "#262628",
+      "line": "#333333",
+      "line_soft": "#2A2A2D",
+      "ink": "#B8CBE2",
+      "ink_strong": "#E1E3E8",
+      "muted": "#8A9BB2",
+      "muted_deep": "#525D68",
+      "accent": "#FFD580",
+      "accent_strong": "#FBC02D",
+      "cyan": "#8BE0F3",
+      "green": "#B8E2B8",
+      "rose": "#E2B8B8"
+    },
+    "typography": {
+      "font_family_base": "\"Kumbh Sans\", sans-serif",
+      "font_weight_light": 300,
+      "font_weight_regular": 400,
+      "font_weight_medium": 500,
+      "font_weight_semibold": 600,
+      "font_weight_bold": 700,
+      "hero_title_size": "clamp(2.2rem, 4vw, 3.8rem)",
+      "section_title_size": "1.35rem",
+      "body_size": "16px",
+      "meta_size": "13px"
+    },
+    "spacing": {
+      "page_padding": "2vw",
+      "panel_padding": "22px 24px",
+      "card_padding": "22px",
+      "grid_gap": "24px",
+      "compact_gap": "12px"
+    },
+    "radius": {
+      "panel": "14px",
+      "control": "8px",
+      "pill": "999px"
+    },
+    "shadow": {
+      "panel": "0 10px 30px rgba(0, 0, 0, 0.24)"
+    },
+    "motion": {
+      "hover_transition": "0.16s ease",
+      "tab_transition": "0.25s ease"
+    },
+    "charts": {
+      "series_palette": [
+        "#8BE0F3",
+        "#FFD580",
+        "#B8E2B8",
+        "#E2B8B8",
+        "#B8CBE2",
+        "#FBC02D"
+      ],
+      "trend_gradient": [
+        "#8BE0F3",
+        "#FFD580"
+      ],
+      "area_fill": "rgba(139, 224, 243, 0.10)",
+      "grid_line": "rgba(184, 203, 226, 0.08)",
+      "axis_line": "rgba(184, 203, 226, 0.18)"
+    }
+  }
+}

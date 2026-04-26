@@ -1,0 +1,25 @@
+{
+  "name": "hero",
+  "description": "Primary page header with logo, title, supporting copy, and top-level navigation.",
+  "theme": "marketstate-dark",
+  "tokens_used": [
+    "colors.surface",
+    "colors.line_soft",
+    "colors.ink",
+    "colors.ink_strong",
+    "colors.accent",
+    "typography.font_family_base",
+    "typography.hero_title_size",
+    "spacing.panel_padding",
+    "radius.panel",
+    "shadow.panel"
+  ],
+  "layout_rules": [
+    "Use a split header with brand block on the left and navigation on the right.",
+    "Allow wrapping on narrower widths instead of collapsing immediately.",
+    "Keep supporting copy under the title rather than beside it on small screens."
+  ],
+  "states": [
+    "default"
+  ]
+}

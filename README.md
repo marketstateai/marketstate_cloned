@@ -30,6 +30,8 @@ This repository is intentionally organized as one monolith with clear domain bou
 ### Platform Operations
 - `.github/workflows/`: CI/CD workflows.
 - `ops/`: Infra/docs assets used to deploy and operate the monolith.
+- `ops/platform/database`: Shared database lifecycle assets such as migrations and seeds.
+- `ops/providers`: Provider-specific adapters and local tooling. Vendor names belong here, not in service paths.
 
 ## Deferred (Backlog)
 

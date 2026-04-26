@@ -1,0 +1,22 @@
+{
+  "name": "tabs",
+  "description": "Section-level navigation for switching between multiple analytical views.",
+  "theme": "marketstate-dark",
+  "tokens_used": [
+    "colors.surface_3",
+    "colors.ink",
+    "typography.font_weight_light",
+    "motion.tab_transition",
+    "radius.control"
+  ],
+  "layout_rules": [
+    "Use short labels.",
+    "Render inactive tabs on dark surfaces with light outlines.",
+    "Render active tabs with inverted contrast."
+  ],
+  "states": [
+    "default",
+    "hover",
+    "active"
+  ]
+}

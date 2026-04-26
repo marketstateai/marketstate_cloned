@@ -1,0 +1,19 @@
+{
+  "name": "brand",
+  "logo_url": "https://marketstate.ai/wp-content/uploads/2024/11/standard_logo-e1748171199851.webp",
+  "site_name": "MarketState",
+  "footer_links": [
+    {
+      "label": "Disclaimer",
+      "url": "https://marketstate.ai/imprint/"
+    },
+    {
+      "label": "Imprint",
+      "url": "https://marketstate.ai/imprint/"
+    },
+    {
+      "label": "Contact",
+      "url": "https://marketstate.ai/contact/"
+    }
+  ]
+}
