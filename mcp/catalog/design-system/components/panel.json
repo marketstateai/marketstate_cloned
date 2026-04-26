@@ -1,0 +1,19 @@
+{
+  "name": "panel",
+  "description": "Generic content container for charts, forms, and tab sections.",
+  "theme": "marketstate-dark",
+  "tokens_used": [
+    "colors.surface",
+    "colors.line_soft",
+    "spacing.panel_padding",
+    "radius.panel",
+    "shadow.panel"
+  ],
+  "layout_rules": [
+    "Use panels to separate analytical sections.",
+    "Headings should include a left rule or another restrained accent treatment."
+  ],
+  "states": [
+    "default"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "currency-overview",
+  "description": "Reference page recipe for public market overview pages centered on exchange-rate analytics.",
+  "theme": "marketstate-dark",
+  "sections": [
+    "hero",
+    "tab-navigation",
+    "summary-metrics",
+    "key-pairs-grid",
+    "relative-performance-chart",
+    "detailed-trend-panel",
+    "latest-snapshot-table",
+    "footer"
+  ],
+  "guidance": [
+    "Lead with a short public-facing explanation rather than product marketing copy.",
+    "Place lightweight summaries before detailed exploration controls.",
+    "Use a comparison chart that normalizes series when showing multiple currencies together.",
+    "Reserve dense tables for later sections, not the top fold."
+  ]
+}

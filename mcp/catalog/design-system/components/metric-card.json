@@ -1,0 +1,24 @@
+{
+  "name": "metric-card",
+  "description": "Compact summary card for single KPI values and supporting context.",
+  "theme": "marketstate-dark",
+  "tokens_used": [
+    "colors.surface",
+    "colors.ink_strong",
+    "colors.muted",
+    "colors.green",
+    "colors.rose",
+    "spacing.card_padding",
+    "radius.panel",
+    "shadow.panel"
+  ],
+  "layout_rules": [
+    "Use a short muted label, a prominent value, and a single supporting subtext line.",
+    "Use green or rose only for directional emphasis."
+  ],
+  "states": [
+    "default",
+    "positive",
+    "negative"
+  ]
+}

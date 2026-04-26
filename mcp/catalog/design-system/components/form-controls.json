@@ -1,0 +1,25 @@
+{
+  "name": "form-controls",
+  "description": "Inputs, selects, and action buttons for analytic filters and search bars.",
+  "theme": "marketstate-dark",
+  "tokens_used": [
+    "colors.surface_3",
+    "colors.line",
+    "colors.ink",
+    "colors.bg",
+    "spacing.compact_gap",
+    "radius.control",
+    "motion.hover_transition"
+  ],
+  "layout_rules": [
+    "Use dark controls with subtle outlines.",
+    "Use the light ink token for primary button fills.",
+    "Prefer grouped, compact filter rows over large form blocks."
+  ],
+  "states": [
+    "default",
+    "focus",
+    "hover",
+    "disabled"
+  ]
+}

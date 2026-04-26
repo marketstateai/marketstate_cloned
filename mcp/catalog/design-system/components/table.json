@@ -1,0 +1,26 @@
+{
+  "name": "table",
+  "description": "Scrollable data table with sticky header and low-contrast row treatment.",
+  "theme": "marketstate-dark",
+  "tokens_used": [
+    "colors.surface_2",
+    "colors.surface_3",
+    "colors.line",
+    "colors.accent",
+    "colors.ink",
+    "colors.green",
+    "colors.rose",
+    "radius.control"
+  ],
+  "layout_rules": [
+    "Use sticky headers for larger datasets.",
+    "Keep header contrast stronger than row contrast.",
+    "Use tinted hover and zebra striping rather than heavy borders."
+  ],
+  "states": [
+    "default",
+    "hover",
+    "positive-cell",
+    "negative-cell"
+  ]
+}
