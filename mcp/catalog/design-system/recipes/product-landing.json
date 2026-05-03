@@ -1,0 +1,29 @@
+{
+  "name": "product-landing",
+  "description": "Reference landing page recipe for the authenticated product-selection view, aligned with the current MarketState portal login and hub styling.",
+  "theme": "marketstate-dark",
+  "sections": [
+    "full-bleed background shell",
+    "centered product landing card",
+    "eyebrow and title header",
+    "primary product selector grid",
+    "secondary action area"
+  ],
+  "components": [
+    "hero",
+    "product-selector-grid",
+    "panel",
+    "form-controls"
+  ],
+  "guidance": [
+    "Carry over the same visual language as the login page: dark surfaces, soft borders, centered container, and a restrained image shell.",
+    "On desktop, present the product selection as a framed card over a full-width background image.",
+    "On mobile, allow the shell image to fill the viewport and let the landing card breathe without excessive framing.",
+    "Keep product choices visually equal unless one product is intentionally featured."
+  ],
+  "responsive_rules": [
+    "Desktop: centered landing card with multi-column product grid.",
+    "Tablet: reduce to two columns while preserving card rhythm and padding.",
+    "Mobile: single-column cards, simplified spacing, and edge-to-edge background treatment."
+  ]
+}

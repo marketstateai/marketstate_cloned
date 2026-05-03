@@ -1,0 +1,12 @@
+:root {
+  --ratio-square: 1 / 1;
+  --ratio-landscape: 4 / 3;
+  --ratio-wide: 16 / 9;
+  --ratio-ultrawide: 21 / 9;
+  --ratio-portrait: 3 / 4;
+
+  --content-width-sm: 40rem;
+  --content-width-md: 60rem;
+  --content-width-lg: 75rem;
+  --content-width-xl: 90rem;
+}

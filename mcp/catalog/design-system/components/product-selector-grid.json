@@ -1,0 +1,30 @@
+{
+  "name": "product-selector-grid",
+  "description": "Centered product selection surface with branded cards, background image shell, and responsive single-column collapse on mobile.",
+  "theme": "marketstate-dark",
+  "tokens_used": [
+    "colors.bg",
+    "colors.surface",
+    "colors.surface_2",
+    "colors.line",
+    "colors.line_soft",
+    "colors.ink",
+    "colors.ink_strong",
+    "spacing.panel_padding",
+    "spacing.card_padding",
+    "spacing.grid_gap",
+    "radius.panel",
+    "shadow.panel"
+  ],
+  "layout_rules": [
+    "Center the landing card within a full-bleed shell that can take a background image.",
+    "Use a three-card grid on desktop, two-up on medium screens, and one-up on mobile.",
+    "Cards should stay square or near-square and align content to the top-left.",
+    "Use stronger title hierarchy in the card header and lighter supporting text within each product tile."
+  ],
+  "states": [
+    "default",
+    "hover",
+    "mobile"
+  ]
+}

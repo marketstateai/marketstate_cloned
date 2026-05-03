@@ -1,0 +1,9 @@
+:root {
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  --shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.2);
+  --shadow-subtle: 0 1px 4px rgba(0, 0, 0, 0.2);
+
+  --transition-fast: 0.16s ease;
+  --transition-base: 0.25s ease;
+  --transition-slow: 0.4s ease;
+}
